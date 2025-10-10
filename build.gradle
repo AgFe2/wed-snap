@@ -44,7 +44,6 @@ jib {
     }
     to {
         image = "${System.getenv('DOCKER_REGISTRY_URL') ?: 'localhost:5000'}/wedsnap"
-        tags = ['latest', "${System.getenv('GIT_COMMIT_SHA') ?: version}"]
         auth {
             username = System.getenv('DOCKER_USERNAME') ?: ''
             password = System.getenv('DOCKER_PASSWORD') ?: ''
