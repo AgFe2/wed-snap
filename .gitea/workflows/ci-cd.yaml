@@ -5,6 +5,9 @@ on: [push]
 jobs:
   Explore-Gitea-Actions:
     runs-on: ubuntu-latest
+    container:
+      image: catthehacker/ubuntu:act-latest  # Gitea Actions 최적화 이미지
+      options: --security-opt seccomp=unconfined # Git 이 임시 파일 생성할 수 있도록 seccomp 프로필이 getrandom() 시스템 콜 허용
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ gitea.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by Gitea!"
