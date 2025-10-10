@@ -7,9 +7,16 @@
       "WebFetch(domain:docs.astral.sh)",
       "Bash(claude --version)",
       "Bash(claude mcp:*)",
-      "Bash(claude doctor)"
+      "Bash(claude doctor)",
+      "Bash(where uv)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enableAllProjectMcpServers": false,
+  "enabledMcpjsonServers": [
+    "context7",
+    "serena",
+    "sequential-thinking"
+  ]
 }
