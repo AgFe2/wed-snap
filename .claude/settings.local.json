@@ -13,7 +13,8 @@
       "mcp__serena__read_file",
       "mcp__serena__activate_project",
       "mcp__serena__check_onboarding_performed",
-      "mcp__serena__find_file"
+      "mcp__serena__find_file",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

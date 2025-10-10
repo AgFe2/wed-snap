@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.6'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.google.cloud.tools.jib' version '3.4.5'
 }
 
 group = 'me.agfe'
@@ -35,4 +36,23 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre'
+    }
+    to {
+        image = "${System.getenv('DOCKER_REGISTRY_URL') ?: 'localhost:5000'}/wedsnap"
+        tags = ['latest', "${System.getenv('GIT_COMMIT_SHA') ?: version}"]
+        auth {
+            username = System.getenv('DOCKER_USERNAME') ?: ''
+            password = System.getenv('DOCKER_PASSWORD') ?: ''
+        }
+    }
+    container {
+        jvmFlags = ['-Xms512m', '-Xmx1024m']
+        ports = ['8080']
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+    }
 }
