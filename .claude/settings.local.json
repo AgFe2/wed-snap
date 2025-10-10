@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uvx:*)",
+      "Bash(npx:*)",
+      "Bash(where claude)",
+      "WebFetch(domain:docs.astral.sh)",
+      "Bash(claude --version)",
+      "Bash(claude mcp:*)",
+      "Bash(claude doctor)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
