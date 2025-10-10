@@ -8,7 +8,12 @@
       "Bash(claude --version)",
       "Bash(claude mcp:*)",
       "Bash(claude doctor)",
-      "Bash(where uv)"
+      "Bash(where uv)",
+      "mcp__serena__list_dir",
+      "mcp__serena__read_file",
+      "mcp__serena__activate_project",
+      "mcp__serena__check_onboarding_performed",
+      "mcp__serena__find_file"
     ],
     "deny": [],
     "ask": []
