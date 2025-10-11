@@ -67,7 +67,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
+          port: ${{ secrets.SSH_PORT }}
           script: |
             echo "🛰️  배포 시작..."
             docker pull ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:latest
