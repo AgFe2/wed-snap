@@ -89,6 +89,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             echo "🛰️  배포 시작..."
+            export PATH=$PATH:/usr/local/bin
             docker pull ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${BUILD_ENV}
             docker stop wedsnap || true
             docker rm wedsnap || true
