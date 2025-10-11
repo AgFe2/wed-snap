@@ -15,15 +15,15 @@ WedSnap 프로젝트는 **GitHub Actions**를 기반으로 한 자동화된 CI/C
 
 ### 주요 기술 스택
 
-| 구성 요소 | 기술 |
-|---------|------|
-| **CI 플랫폼** | GitHub Actions |
-| **빌드 도구** | Gradle 8.x |
-| **컨테이너화** | Docker (Jib 플러그인) |
-| **이미지 저장소** | Private Docker Registry (Synology NAS) |
-| **배포 대상** | Synology NAS (Docker 컨테이너) |
-| **테스트 커버리지** | JaCoCo |
-| **배포 방식** | SSH 기반 원격 배포 |
+| 구성 요소        | 기술                                     |
+|--------------|----------------------------------------|
+| **CI 플랫폼**   | GitHub Actions                         |
+| **빌드 도구**    | Gradle 8.x                             |
+| **컨테이너화**    | Docker (Jib 플러그인)                      |
+| **이미지 저장소**  | Private Docker Registry (Synology NAS) |
+| **배포 대상**    | Synology NAS (Docker 컨테이너)             |
+| **테스트 커버리지** | JaCoCo                                 |
+| **배포 방식**    | SSH 기반 원격 배포                           |
 
 ---
 
@@ -98,12 +98,12 @@ WedSnap 프로젝트는 **GitHub Actions**를 기반으로 한 자동화된 CI/C
 
 CI 파이프라인은 다음 조건에서 자동 실행됩니다:
 
-| 이벤트 | 브랜치 | 설명 |
-|-------|-------|------|
-| **push** | `main` | 프로덕션 배포 트리거 |
-| **push** | `dev` | 개발 환경 빌드 |
-| **push** | `feature/*` | 기능 브랜치 빌드 (배포 없음) |
-| **pull_request** | `main` | PR 생성 시 검증 |
+| 이벤트              | 브랜치         | 설명                |
+|------------------|-------------|-------------------|
+| **push**         | `main`      | 프로덕션 배포 트리거       |
+| **push**         | `dev`       | 개발 환경 빌드          |
+| **push**         | `feature/*` | 기능 브랜치 빌드 (배포 없음) |
+| **pull_request** | `main`      | PR 생성 시 검증        |
 
 ### CI 단계별 설명
 
@@ -162,6 +162,7 @@ actions/cache@v4
 - Private Docker Registry로 자동 푸시
 
 **이미지 태그 규칙:**
+
 ```
 ${DOCKER_REGISTRY_URL}/wedsnap:${BUILD_ENV}
 
@@ -213,6 +214,7 @@ docker run -d --name wedsnap \
 ```
 
 **주요 특징:**
+
 - 기존 컨테이너 안전 삭제 (`|| true`로 에러 무시)
 - 8080 포트로 서비스 노출
 - Detached 모드로 백그라운드 실행
@@ -237,20 +239,20 @@ CI/CD 파이프라인 실행에 필요한 민감한 정보는 GitHub Secrets에 
 
 #### Docker Registry 관련
 
-| Secret 이름 | 설명 | 예시 값 |
-|------------|------|---------|
+| Secret 이름             | 설명                  | 예시 값                     |
+|-----------------------|---------------------|--------------------------|
 | `DOCKER_REGISTRY_URL` | Private Registry 주소 | `your-registry.com:5050` |
-| `DOCKER_USERNAME` | Registry 사용자명 | `registryuser` |
-| `DOCKER_PASSWORD` | Registry 비밀번호 | `********` (보안상 기록하지 않음) |
+| `DOCKER_USERNAME`     | Registry 사용자명       | `registryuser`           |
+| `DOCKER_PASSWORD`     | Registry 비밀번호       | `********` (보안상 기록하지 않음) |
 
 #### SSH 접속 관련
 
-| Secret 이름 | 설명 | 예시 값 |
-|------------|------|---------|
-| `SSH_HOST` | Synology NAS 호스트 | `your-nas.com` |
-| `SSH_PORT` | SSH 포트 | `31422` |
-| `SSH_USER` | SSH 접속 사용자 | `deployuser` |
-| `SSH_PRIVATE_KEY` | SSH 개인키 전체 내용 | `-----BEGIN RSA PRIVATE KEY-----\n...` |
+| Secret 이름         | 설명               | 예시 값                                   |
+|-------------------|------------------|----------------------------------------|
+| `SSH_HOST`        | Synology NAS 호스트 | `your-nas.com`                         |
+| `SSH_PORT`        | SSH 포트           | `31422`                                |
+| `SSH_USER`        | SSH 접속 사용자       | `deployuser`                           |
+| `SSH_PRIVATE_KEY` | SSH 개인키 전체 내용    | `-----BEGIN RSA PRIVATE KEY-----\n...` |
 
 ### Secrets 등록 방법
 
@@ -261,6 +263,7 @@ CI/CD 파이프라인 실행에 필요한 민감한 정보는 GitHub Secrets에 
 5. **Add secret** 클릭
 
 **중요 사항:**
+
 - `SSH_PRIVATE_KEY`는 개행 문자를 포함한 **전체 내용**을 그대로 복사
 - SSH 키 파일 (`wedsnap_deploy_rsa`, `wedsnap_deploy_rsa.pub`)은 별도로 안전하게 공유
 - 비밀번호 및 키는 절대 코드에 하드코딩하지 않음
@@ -276,6 +279,7 @@ CI/CD 파이프라인 실행에 필요한 민감한 정보는 GitHub Secrets에 
 #### 1. 환경 변수 설정
 
 **Linux / macOS:**
+
 ```bash
 export DOCKER_REGISTRY_URL="your-registry.com:5050"
 export DOCKER_USERNAME="your-username"
@@ -284,6 +288,7 @@ export BUILD_ENV="dev"
 ```
 
 **Windows (PowerShell):**
+
 ```powershell
 $env:DOCKER_REGISTRY_URL="your-registry.com:5050"
 $env:DOCKER_USERNAME="your-username"
@@ -302,11 +307,13 @@ docker login ${DOCKER_REGISTRY_URL}
 #### 3. Jib 빌드 실행
 
 **Registry로 푸시:**
+
 ```bash
 ./gradlew jib
 ```
 
 **로컬 Docker 데몬에 빌드 (Registry 푸시 없음):**
+
 ```bash
 ./gradlew jibDockerBuild
 ```
@@ -332,11 +339,11 @@ docker run -p 8080:8080 wedsnap:dev
 
 ### 브랜치별 동작
 
-| 브랜치 | BUILD_ENV | CI 실행 | 이미지 빌드 | CD 실행 | 배포 대상 |
-|-------|----------|--------|-----------|--------|---------|
-| `main` | `prod` | ✅ | ✅ | ✅ | Synology NAS (프로덕션) |
-| `dev` | `dev` | ✅ | ❌ | ❌ | 없음 |
-| `feature/*` | `feature` | ✅ | ❌ | ❌ | 없음 |
+| 브랜치         | BUILD_ENV | CI 실행 | 이미지 빌드 | CD 실행 | 배포 대상               |
+|-------------|-----------|-------|--------|-------|---------------------|
+| `main`      | `prod`    | ✅     | ✅      | ✅     | Synology NAS (프로덕션) |
+| `dev`       | `dev`     | ✅     | ❌      | ❌     | 없음                  |
+| `feature/*` | `feature` | ✅     | ❌      | ❌     | 없음                  |
 
 ### 권장 워크플로우
 
@@ -366,11 +373,13 @@ docker run -p 8080:8080 wedsnap:dev
 ### 1. 테스트 실패
 
 **증상:**
+
 ```
 ❌ Task :test FAILED
 ```
 
 **해결 방법:**
+
 1. 로컬에서 테스트 실행
    ```bash
    ./gradlew test --info
@@ -382,12 +391,14 @@ docker run -p 8080:8080 wedsnap:dev
 ### 2. 커버리지 미달
 
 **증상:**
+
 ```
 ❌ Task :jacocoTestCoverageVerification FAILED
 Rule violated for bundle: LINE covered ratio is 0.25, but expected minimum is 0.30
 ```
 
 **해결 방법:**
+
 1. 커버리지 리포트 확인
    ```bash
    ./gradlew jacocoTestReport
@@ -399,42 +410,48 @@ Rule violated for bundle: LINE covered ratio is 0.25, but expected minimum is 0.
 ### 3. Jib 빌드 실패
 
 **증상:**
+
 ```
 ❌ Task :jib FAILED
 Unauthorized: authentication required
 ```
 
 **해결 방법:**
+
 1. GitHub Secrets 확인
-   - `DOCKER_REGISTRY_URL`
-   - `DOCKER_USERNAME`
-   - `DOCKER_PASSWORD`
+    - `DOCKER_REGISTRY_URL`
+    - `DOCKER_USERNAME`
+    - `DOCKER_PASSWORD`
 2. Registry 로그인 정보 유효성 확인
 3. Registry 서버 상태 확인
 
 ### 4. SSH 배포 실패
 
 **증상:**
+
 ```
 ❌ Deploy to Synology NAS FAILED
 Permission denied (publickey)
 ```
 
 **해결 방법:**
+
 1. GitHub Secrets의 `SSH_PRIVATE_KEY` 확인
-   - 개행 문자 포함 여부
-   - `-----BEGIN ... END-----` 포함 여부
+    - 개행 문자 포함 여부
+    - `-----BEGIN ... END-----` 포함 여부
 2. Synology NAS의 공개키 등록 확인
 3. SSH 포트 및 방화벽 설정 확인
 
 ### 5. Docker Pull 실패
 
 **증상:**
+
 ```
 Error response from daemon: pull access denied
 ```
 
 **해결 방법:**
+
 1. Synology NAS에 SSH 접속
    ```bash
    ssh deployuser@your-nas.com -p 31422
@@ -454,11 +471,12 @@ Error response from daemon: pull access denied
 1. GitHub Repository → **Actions** 탭
 2. 워크플로우 실행 목록에서 해당 실행 클릭
 3. Job별 로그 확인:
-   - `set-environment`: 환경 변수 설정
-   - `ci`: 테스트, 빌드, 이미지 푸시
-   - `cd`: 배포 (main 브랜치만)
+    - `set-environment`: 환경 변수 설정
+    - `ci`: 테스트, 빌드, 이미지 푸시
+    - `cd`: 배포 (main 브랜치만)
 
 **유용한 로그 검색:**
+
 ```
 # 커버리지 정보
 === Jacoco Coverage Summary ===
@@ -551,14 +569,14 @@ WedSnap 프로젝트는 **Private Docker Registry**를 사용하여 빌드된 �
 
 #### Registry 구성
 
-| 항목 | 값 |
-|-----|-----|
-| **이미지** | `registry:latest` (Docker Hub) |
-| **프로토콜** | HTTPS (Synology 인증서 사용) |
-| **인증 방식** | htpasswd (Basic Auth) |
-| **호스트 포트** | 5050 |
-| **컨테이너 포트** | 5000 |
-| **Registry URL** | `${DOCKER_REGISTRY_URL}:5050` |
+| 항목               | 값                              |
+|------------------|--------------------------------|
+| **이미지**          | `registry:latest` (Docker Hub) |
+| **프로토콜**         | HTTPS (Synology 인증서 사용)        |
+| **인증 방식**        | htpasswd (Basic Auth)          |
+| **호스트 포트**       | 5050                           |
+| **컨테이너 포트**      | 5000                           |
+| **Registry URL** | `${DOCKER_REGISTRY_URL}:5050`  |
 
 #### 디렉토리 구조
 
@@ -595,20 +613,20 @@ docker run -d \
 
 **옵션 설명:**
 
-| 옵션 | 설명 |
-|-----|------|
-| `--name registry` | 컨테이너 이름 지정 |
-| `--restart=always` | 시스템 재부팅 시 자동 시작 |
-| `-p 5050:5000` | 호스트 포트 5050을 컨테이너 포트 5000에 매핑 |
-| `-v` (데이터) | 이미지 저장소 볼륨 마운트 |
-| `-v` (auth) | 인증 파일 볼륨 마운트 |
-| `-v` (certs) | 인증서 볼륨 마운트 |
-| `REGISTRY_AUTH` | 인증 방식 (htpasswd) |
-| `REGISTRY_AUTH_HTPASSWD_REALM` | 인증 영역 이름 |
-| `REGISTRY_AUTH_HTPASSWD_PATH` | htpasswd 파일 경로 |
-| `REGISTRY_STORAGE_DELETE_ENABLED` | 이미지 삭제 허용 |
-| `REGISTRY_HTTP_TLS_CERTIFICATE` | SSL 인증서 경로 |
-| `REGISTRY_HTTP_TLS_KEY` | SSL 개인키 경로 |
+| 옵션                                | 설명                            |
+|-----------------------------------|-------------------------------|
+| `--name registry`                 | 컨테이너 이름 지정                    |
+| `--restart=always`                | 시스템 재부팅 시 자동 시작               |
+| `-p 5050:5000`                    | 호스트 포트 5050을 컨테이너 포트 5000에 매핑 |
+| `-v` (데이터)                        | 이미지 저장소 볼륨 마운트                |
+| `-v` (auth)                       | 인증 파일 볼륨 마운트                  |
+| `-v` (certs)                      | 인증서 볼륨 마운트                    |
+| `REGISTRY_AUTH`                   | 인증 방식 (htpasswd)              |
+| `REGISTRY_AUTH_HTPASSWD_REALM`    | 인증 영역 이름                      |
+| `REGISTRY_AUTH_HTPASSWD_PATH`     | htpasswd 파일 경로                |
+| `REGISTRY_STORAGE_DELETE_ENABLED` | 이미지 삭제 허용                     |
+| `REGISTRY_HTTP_TLS_CERTIFICATE`   | SSL 인증서 경로                    |
+| `REGISTRY_HTTP_TLS_KEY`           | SSL 개인키 경로                    |
 
 #### Registry 관리 명령어
 
@@ -640,6 +658,7 @@ docker rm registry
 #### 인증서 관리
 
 **인증서 위치:**
+
 ```
 /volume1/docker/registry/certs/
 ├── domain.crt  # 공개 인증서
@@ -665,6 +684,7 @@ docker rm registry
    ```
 
 **인증서 확인:**
+
 ```bash
 # 인증서 유효기간 확인
 openssl x509 -in /volume1/docker/registry/certs/domain.crt -noout -dates
@@ -676,11 +696,13 @@ openssl x509 -in /volume1/docker/registry/certs/domain.crt -noout -text
 #### 사용자 인증 관리 (htpasswd)
 
 **htpasswd 파일 위치:**
+
 ```
 /volume1/docker/registry/auth/htpasswd
 ```
 
 **새 사용자 추가:**
+
 ```bash
 # 첫 번째 사용자 생성 (파일 생성)
 docker run --rm --entrypoint htpasswd \
@@ -692,6 +714,7 @@ docker run --rm --entrypoint htpasswd \
 ```
 
 **사용자 삭제:**
+
 ```bash
 # htpasswd 파일 편집 (해당 사용자 라인 삭제)
 vi /volume1/docker/registry/auth/htpasswd
@@ -700,6 +723,7 @@ nano /volume1/docker/registry/auth/htpasswd
 ```
 
 **비밀번호 변경:**
+
 ```bash
 # 1. 기존 사용자 라인 삭제
 # 2. 새 비밀번호로 사용자 추가
@@ -708,6 +732,7 @@ docker run --rm --entrypoint htpasswd \
 ```
 
 **변경 사항 적용:**
+
 ```bash
 # 인증 정보 변경 후 Registry 재시작
 docker restart registry
@@ -716,6 +741,7 @@ docker restart registry
 #### Registry 접근 및 사용
 
 **Docker 로그인:**
+
 ```bash
 # Registry에 로그인
 docker login ${DOCKER_REGISTRY_URL}:5050
@@ -727,6 +753,7 @@ cat ~/.docker/config.json
 ```
 
 **이미지 푸시:**
+
 ```bash
 # 이미지 태그 지정
 docker tag wedsnap:prod ${DOCKER_REGISTRY_URL}:5050/wedsnap:prod
@@ -736,12 +763,14 @@ docker push ${DOCKER_REGISTRY_URL}:5050/wedsnap:prod
 ```
 
 **이미지 풀:**
+
 ```bash
 # Registry에서 이미지 가져오기
 docker pull ${DOCKER_REGISTRY_URL}:5050/wedsnap:prod
 ```
 
 **저장된 이미지 목록 확인 (API):**
+
 ```bash
 # 모든 저장소 목록
 curl -u username:password https://${DOCKER_REGISTRY_URL}:5050/v2/_catalog
@@ -755,6 +784,7 @@ curl -u username:password https://${DOCKER_REGISTRY_URL}:5050/v2/wedsnap/tags/li
 ##### 1. HTTPS 인증서 오류
 
 **증상:**
+
 ```
 x509: certificate signed by unknown authority
 ```
@@ -762,6 +792,7 @@ x509: certificate signed by unknown authority
 **해결 방법:**
 
 **방법 1: Docker에 인증서 신뢰 추가 (권장)**
+
 ```bash
 # Linux
 sudo mkdir -p /etc/docker/certs.d/${DOCKER_REGISTRY_URL}:5050
@@ -776,21 +807,24 @@ security add-trusted-cert -d -r trustRoot -k ~/Library/Keychains/login.keychain 
 ```
 
 **방법 2: Insecure Registry 설정 (개발 환경만)**
+
 ```json
 // /etc/docker/daemon.json
 {
-  "insecure-registries": ["${DOCKER_REGISTRY_URL}:5050"]
+  "insecure-registries": [ "${DOCKER_REGISTRY_URL}:5050" ]
 }
 ```
 
 ##### 2. 인증 실패
 
 **증상:**
+
 ```
 unauthorized: authentication required
 ```
 
 **해결 방법:**
+
 1. 로그인 정보 확인
    ```bash
    docker login ${DOCKER_REGISTRY_URL}:5050
@@ -807,11 +841,13 @@ unauthorized: authentication required
 ##### 3. Registry 컨테이너 시작 실패
 
 **증상:**
+
 ```
 Error starting userland proxy: listen tcp 0.0.0.0:5050: bind: address already in use
 ```
 
 **해결 방법:**
+
 ```bash
 # 포트 사용 중인 프로세스 확인
 netstat -tulpn | grep 5050
@@ -828,11 +864,13 @@ docker rm registry
 ##### 4. 이미지 Pull 실패
 
 **증상:**
+
 ```
 Error response from daemon: manifest for image not found
 ```
 
 **해결 방법:**
+
 ```bash
 # Registry에 저장된 이미지 확인
 curl -u username:password https://${DOCKER_REGISTRY_URL}:5050/v2/_catalog
@@ -847,6 +885,7 @@ docker pull ${DOCKER_REGISTRY_URL}:5050/wedsnap:prod
 #### Registry 백업 및 복구
 
 **데이터 백업:**
+
 ```bash
 # Registry 데이터 백업
 tar -czvf registry-backup-$(date +%Y%m%d).tar.gz /volume1/docker/registry/
@@ -858,6 +897,7 @@ tar -czvf registry-certs-$(date +%Y%m%d).tar.gz /volume1/docker/registry/certs/
 ```
 
 **데이터 복구:**
+
 ```bash
 # Registry 컨테이너 중지
 docker stop registry
@@ -899,24 +939,24 @@ docker pull your-registry.com:5050/wedsnap:prod
 ## ⚠️ 보안 주의사항
 
 1. **SSH 키 관리**
-   - SSH 개인키 파일은 절대 Git에 커밋하지 않음
-   - 파일 권한: `chmod 600 ~/.ssh/wedsnap_deploy_rsa`
-   - 주기적으로 키 로테이션 (6-12개월)
+    - SSH 개인키 파일은 절대 Git에 커밋하지 않음
+    - 파일 권한: `chmod 600 ~/.ssh/wedsnap_deploy_rsa`
+    - 주기적으로 키 로테이션 (6-12개월)
 
 2. **Docker Registry 인증**
-   - 비밀번호는 GitHub Secrets에만 저장
-   - 주기적으로 비밀번호 변경 (3-6개월)
-   - Registry 접근 로그 모니터링
+    - 비밀번호는 GitHub Secrets에만 저장
+    - 주기적으로 비밀번호 변경 (3-6개월)
+    - Registry 접근 로그 모니터링
 
 3. **환경 변수**
-   - 민감한 정보는 코드에 하드코딩 금지
-   - `.env` 파일은 `.gitignore`에 추가
-   - GitHub Secrets 사용 권장
+    - 민감한 정보는 코드에 하드코딩 금지
+    - `.env` 파일은 `.gitignore`에 추가
+    - GitHub Secrets 사용 권장
 
 4. **배포 권한**
-   - `main` 브랜치는 보호 브랜치로 설정
-   - PR 리뷰 필수화
-   - 직접 푸시 제한
+    - `main` 브랜치는 보호 브랜치로 설정
+    - PR 리뷰 필수화
+    - 직접 푸시 제한
 
 ---
 
