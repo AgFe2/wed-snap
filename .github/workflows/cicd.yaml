@@ -44,6 +44,25 @@ jobs:
           echo "=== Jacoco Coverage Summary ==="
           grep -A 3 '<counter type="LINE"' build/reports/jacoco/test/jacocoTestReport.xml || true
 
+      ##TODO : 리포트 작성
+
+      - name: Set BUILD_ENV
+        run: |
+          case "${GITHUB_REF_NAME}" in
+          main)
+            echo "BUILD_ENV=prod" >> $GITHUB_ENV
+            ;;
+          dev)
+            echo "BUILD_ENV=dev" >> $GITHUB_ENV
+            ;;
+          feature/*)
+            echo "BUILD_ENV=feature" >> $GITHUB_ENV
+            ;;
+          *)
+            echo "BUILD_ENV=other" >> $GITHUB_ENV
+            ;;
+          esac
+
       - name: Build JAR
         if: github.ref_name == 'main' || github.ref_name == 'dev'
         run: ./gradlew build
@@ -70,10 +89,10 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             echo "🛰️  배포 시작..."
-            docker pull ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:latest
+            docker pull ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${BUILD_ENV}
             docker stop wedsnap || true
             docker rm wedsnap || true
             docker run -d --name wedsnap \
               -p 8080:8080 \
-              ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:latest
+              ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${BUILD_ENV}
             echo "✅ 배포 완료!"
