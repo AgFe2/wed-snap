@@ -76,7 +76,7 @@ jobs:
         run: ./gradlew build
 
       - name: Build & Push Docker Image with Jib
-        if: github.ref_name == 'main'
+        if: github.ref_name == 'main' || github.ref_name == 'dev'
         env:
           DOCKER_REGISTRY_URL: ${{ secrets.DOCKER_REGISTRY_URL }}
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -89,7 +89,7 @@ jobs:
   cd:
     runs-on: ubuntu-latest
     needs: [set-environment, ci]
-    if: github.ref_name == 'main'
+    if: github.ref_name == 'main' || github.ref_name == 'dev'
     steps:
       - name: Deploy to Synology NAS
         uses: appleboy/ssh-action@v1.0.3
