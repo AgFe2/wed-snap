@@ -4,13 +4,14 @@
 
 - **프로젝트**: WedSnap
 - **작성일**: 2025-10-10
-- **목적**: Gitea Actions 기반 CI/CD 자동화 파이프라인 구축
+- **최종 수정일**: 2025-10-11
+- **목적**: GitHub Actions 기반 CI/CD 자동화 파이프라인 구축
 
 ---
 
 ## 🎯 개요
 
-본 문서는 WedSnap 프로젝트의 CI/CD 파이프라인을 Gitea Actions를 이용하여 구축하는 계획서입니다.
+본 문서는 WedSnap 프로젝트의 CI/CD 파이프라인을 GitHub Actions를 이용하여 구축하는 계획서입니다.
 
 ### 주요 목표
 
@@ -19,15 +20,21 @@
 - **Synology NAS 배포**: Docker 컨테이너를 Synology NAS에 자동 배포
 - **무중단 배포**: 컨테이너 재시작을 통한 서비스 업데이트
 
-### 선택한 도구: Gitea Actions
+### 선택한 도구: GitHub Actions
 
 **선택 이유:**
-- ✅ Gitea 내장 기능으로 별도 도구 설치 불필요
-- ✅ GitHub Actions와 높은 호환성
+- ✅ GitHub 내장 기능으로 별도 도구 설치 불필요
+- ✅ GitHub-hosted runner로 즉시 사용 가능
 - ✅ YAML 기반의 직관적인 설정
-- ✅ 경량화되어 리소스 효율적
+- ✅ 풍부한 커뮤니티 액션 및 문서
+- ✅ Synology의 낮은 Linux kernel 버전 문제 해결 (self-hosted runner 불필요)
+
+**기존 계획 변경 사유:**
+- ❌ Gitea Actions: Synology NAS의 Linux kernel 버전이 낮아 Gitea Runner 실행 불가
+- ✅ GitHub Actions: GitHub-hosted runner 사용으로 인프라 제약 해결
 
 **대안 도구:**
+- Gitea Actions: Self-hosted runner 필요 (Synology NAS kernel 버전 이슈)
 - Drone CI: 별도 서버 설치 필요
 - Jenkins: 무겁고 복잡한 설정
 
@@ -37,13 +44,13 @@
 
 ```
 ┌─────────┐     Git Push      ┌──────────────────┐
-│  개발자  │ ───────────────> │ Gitea Repository │
+│  개발자  │ ───────────────> │ GitHub Repository│
 └─────────┘                   └────────┬─────────┘
                                        │
                                        │ Trigger
                                        ↓
                               ┌────────────────────┐
-                              │  Gitea Actions     │
+                              │  GitHub Actions    │
                               │  (Workflow)        │
                               └────────┬───────────┘
                                        │
@@ -52,7 +59,7 @@
                        ↓                                ↓
               ┌────────────────┐              ┌────────────────┐
               │   CI 단계      │              │   CD 단계      │
-              │   (Runner)     │              │   (Runner)     │
+              │ (GitHub Runner)│              │ (GitHub Runner)│
               ├────────────────┤              ├────────────────┤
               │ 1. 테스트 실행 │              │ 1. SSH 접속    │
               │ 2. Gradle 빌드 │              │ 2. Docker Pull │
@@ -116,11 +123,11 @@ jib {
 }
 ```
 
-### 2단계: Gitea Workflow 파일 작성
+### 2단계: GitHub Workflow 파일 작성
 
-Gitea Actions의 워크플로우를 정의하는 YAML 파일을 작성합니다.
+GitHub Actions의 워크플로우를 정의하는 YAML 파일을 작성합니다.
 
-**파일 위치:** `.gitea/workflows/ci-cd.yaml`
+**파일 위치:** `.github/workflows/ci-cd.yaml` (또는 `.github/workflows/ci-cd.yml`)
 
 **주요 구성:**
 - **트리거 조건**: main 브랜치 푸시 시
@@ -135,16 +142,19 @@ on:
     branches: [main]
 jobs:
   ci:
+    runs-on: ubuntu-latest
     # 테스트, 빌드, 이미지 푸시
   cd:
+    runs-on: ubuntu-latest
+    needs: ci
     # SSH 접속 후 컨테이너 재시작
 ```
 
-### 3단계: Gitea Secrets 설정
+### 3단계: GitHub Secrets 설정
 
-민감한 정보는 Gitea Repository의 Secrets로 관리합니다.
+민감한 정보는 GitHub Repository의 Secrets로 관리합니다.
 
-**설정 위치:** Repository Settings → Secrets
+**설정 위치:** Repository Settings → Secrets and variables → Actions
 
 **필요한 Secrets:**
 - `DOCKER_REGISTRY_URL`: Synology Docker Registry 주소 (예: `registry.nas.local:5000`)
@@ -165,6 +175,8 @@ Synology NAS를 배포 타겟으로 준비합니다.
 - Docker CLI 접근 권한 확인
 - 배포 스크립트 준비 (선택 사항)
 
+**참고:** GitHub-hosted runner를 사용하므로 Synology NAS에 runner를 설치할 필요가 없습니다.
+
 ---
 
 ## 📋 필요한 구성 요소
@@ -180,7 +192,7 @@ plugins {
 }
 ```
 
-### Gitea Secrets
+### GitHub Secrets
 
 | Secret 이름 | 설명 | 예시 |
 |------------|------|------|
@@ -195,9 +207,9 @@ plugins {
 
 ```
 WedSnap/
-├── .gitea/
+├── .github/
 │   └── workflows/
-│       └── ci-cd.yaml          # Gitea Actions 워크플로우
+│       └── ci-cd.yaml          # GitHub Actions 워크플로우
 ├── build.gradle                # Jib 설정 포함
 ├── docker-compose.yml          # (선택) 컨테이너 배포 설정
 ├── deploy/
@@ -272,14 +284,14 @@ WedSnap/
   - [ ] SSH 접속 테스트
   - [ ] Docker 명령어 실행 권한 확인
 
-- [ ] **4. Gitea Secrets 등록**
-  - [ ] Repository Settings 접속
-  - [ ] `DOCKER_REGISTRY_URL` 등록
-  - [ ] `DOCKER_USERNAME` 등록
-  - [ ] `DOCKER_PASSWORD` 등록
-  - [ ] `SSH_PRIVATE_KEY` 등록
-  - [ ] `SSH_HOST` 등록
-  - [ ] `SSH_USER` 등록
+- [x] **4. GitHub Secrets 등록**
+  - [x] Repository Settings 접속
+  - [x] `DOCKER_REGISTRY_URL` 등록
+  - [x] `DOCKER_USERNAME` 등록
+  - [x] `DOCKER_PASSWORD` 등록
+  - [x] `SSH_PRIVATE_KEY` 등록 (필요 시)
+  - [x] `SSH_HOST` 등록 (필요 시)
+  - [x] `SSH_USER` 등록 (필요 시)
 
 - [ ] **5. build.gradle에 Registry 연동 설정**
   - [ ] Jib `to.image` 설정 (Registry URL 포함)
@@ -289,19 +301,19 @@ WedSnap/
 
 ### Phase 2: CI/CD 워크플로우 작성 (6-10)
 
-- [ ] **6. .gitea/workflows 디렉토리 생성**
-  - [ ] `.gitea/workflows/` 디렉토리 생성
-  - [ ] `ci-cd.yaml` 파일 생성
+- [x] **6. .github/workflows 디렉토리 생성**
+  - [x] `.github/workflows/` 디렉토리 생성
+  - [x] `ci-cd.yaml` 파일 생성
 
-- [ ] **7. CI Job 작성**
-  - [ ] 워크플로우 트리거 설정 (main 브랜치 push)
-  - [ ] Job 이름 및 Runner 설정
-  - [ ] 코드 체크아웃 Step
-  - [ ] Java 17 설정 Step
-  - [ ] Gradle 캐시 설정 Step
-  - [ ] 테스트 실행 Step
-  - [ ] 빌드 실행 Step
-  - [ ] Jib 이미지 푸시 Step (Secrets 사용)
+- [x] **7. CI Job 작성** (테스트 중)
+  - [x] 워크플로우 트리거 설정 (main 브랜치 push)
+  - [x] Job 이름 및 Runner 설정 (ubuntu-latest)
+  - [x] 코드 체크아웃 Step
+  - [x] Java 17 설정 Step
+  - [x] Gradle 캐시 설정 Step
+  - [x] 테스트 실행 Step
+  - [x] 빌드 실행 Step
+  - [x] Jib 이미지 푸시 Step (Secrets 사용)
 
 - [ ] **8. CD Job 작성**
   - [ ] CI Job 의존성 설정 (needs: ci)
@@ -315,10 +327,10 @@ WedSnap/
   - [ ] 환경 변수 및 Secrets 참조 확인
   - [ ] Job 의존성 관계 확인
 
-- [ ] **10. 워크플로우 커밋 및 푸시**
-  - [ ] Git add `.gitea/workflows/ci-cd.yaml`
-  - [ ] Git commit
-  - [ ] Git push origin main
+- [x] **10. 워크플로우 커밋 및 푸시**
+  - [x] Git add `.github/workflows/ci-cd.yaml`
+  - [x] Git commit
+  - [x] GitHub으로 코드 이관 완료
 
 ### Phase 3: 배포 스크립트 및 부가 설정 (11-15)
 
@@ -422,12 +434,12 @@ WedSnap/
 ### 보안
 
 1. **Secrets 관리**
-   - SSH Private Key와 Registry 비밀번호는 반드시 Gitea Secrets로 관리
+   - SSH Private Key와 Registry 비밀번호는 반드시 GitHub Secrets로 관리
    - 절대 코드에 하드코딩하지 않기
    - .env 파일도 .gitignore에 추가
 
 2. **네트워크 보안**
-   - Gitea Runner가 Synology NAS에 접근 가능한 네트워크 구성 확인
+   - GitHub-hosted runner가 Synology NAS에 접근 가능한 네트워크 구성 확인 (공인 IP 또는 VPN 필요)
    - 필요시 방화벽 규칙 추가
    - SSH는 키 기반 인증 사용
 
@@ -464,10 +476,11 @@ WedSnap/
 
 ## 📚 참고 자료
 
-### Gitea Actions
+### GitHub Actions
 
-- [Gitea Actions 공식 문서](https://docs.gitea.io/en-us/actions/)
-- [GitHub Actions 호환성](https://docs.gitea.io/en-us/actions/comparison/)
+- [GitHub Actions 공식 문서](https://docs.github.com/en/actions)
+- [GitHub Actions 빠른 시작](https://docs.github.com/en/actions/quickstart)
+- [워크플로우 문법](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
 
 ### Jib
 
@@ -489,7 +502,8 @@ WedSnap/
 
 | 날짜 | 버전 | 변경 내용 | 작성자 |
 |------|------|----------|--------|
-| 2025-10-10 | 1.0 | 초안 작성 | - |
+| 2025-10-10 | 1.0 | 초안 작성 (Gitea Actions 기반) | - |
+| 2025-10-11 | 2.0 | GitHub Actions로 전환 (Synology NAS kernel 버전 이슈로 인한 변경) | - |
 
 ---
 
