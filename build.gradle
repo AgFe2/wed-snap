@@ -44,7 +44,8 @@ jib {
         image = 'eclipse-temurin:17-jre'
     }
     to {
-        image = "${System.getenv('DOCKER_REGISTRY_URL') ?: 'localhost:5000'}/wedsnap"
+        def buildBranch = project.hasProperty('buildBranch') ? project.buildBranch : (System.getenv('GITHUB_REF_NAME') ?: 'local')
+        image = "${System.getenv('DOCKER_REGISTRY_URL') ?: 'localhost:5000'}/wedsnap:${buildBranch}"
         auth {
             username = System.getenv('DOCKER_USERNAME') ?: ''
             password = System.getenv('DOCKER_PASSWORD') ?: ''
