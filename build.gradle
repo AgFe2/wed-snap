@@ -29,6 +29,7 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -70,7 +71,7 @@ jacocoTestReport {
         xml.required = true
         html.required = true
         csv.required = false
-        html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco/test/html')
     }
 }
 

@@ -21,29 +21,30 @@ WedSnap은 결혼식이나 행사에서 참석자들이 모바일 기기로 촬�
 ### 핵심 기능
 
 1. **QR 코드/링크 접속**
-   - 행사 참석자들이 QR 코드를 스캔하거나 링크를 클릭하여 모바일 기기에서 바로 접속
-   - 별도의 앱 설치 없이 웹 브라우저를 통한 접속
+    - 행사 참석자들이 QR 코드를 스캔하거나 링크를 클릭하여 모바일 기기에서 바로 접속
+    - 별도의 앱 설치 없이 웹 브라우저를 통한 접속
 
 2. **사용자 정보 입력**
-   - 업로드하는 사람의 이름을 입력할 수 있는 인풋 박스 제공
-   - 이름은 NAS 폴더 생성 시 사용됨
+    - 업로드하는 사람의 이름을 입력할 수 있는 인풋 박스 제공
+    - 이름은 NAS 폴더 생성 시 사용됨
 
 3. **이미지 선택 및 업로드**
-   - 모바일 기기의 갤러리에서 이미지 선택 (단일/다중 선택 지원 예정)
-   - 선택한 이미지를 Synology NAS로 업로드
+    - 모바일 기기의 갤러리에서 이미지 선택 (단일/다중 선택 지원 예정)
+    - 선택한 이미지를 Synology NAS로 업로드
 
 4. **자동 폴더 관리**
-   - 입력한 이름으로 NAS의 지정된 경로에 폴더 자동 생성
-   - 동일한 이름의 폴더가 이미 존재할 경우 순차적으로 숫자 부여 (예: `홍길동`, `홍길동_2`, `홍길동_3`)
-   - 각 사용자 폴더에 업로드한 이미지 저장
+    - 입력한 이름으로 NAS의 지정된 경로에 폴더 자동 생성
+    - 동일한 이름의 폴더가 이미 존재할 경우 순차적으로 숫자 부여 (예: `홍길동`, `홍길동_2`, `홍길동_3`)
+    - 각 사용자 폴더에 업로드한 이미지 저장
 
 5. **업로드 상태 피드백**
-   - 업로드 진행 상황 표시
-   - 성공/실패 메시지 제공
+    - 업로드 진행 상황 표시
+    - 성공/실패 메시지 제공
 
 ## 빌드 및 개발 명령어
 
 ### 프로젝트 빌드
+
 ```bash
 # Windows
 gradlew build
@@ -53,6 +54,7 @@ gradlew build
 ```
 
 ### 애플리케이션 실행
+
 ```bash
 # Windows
 gradlew bootRun
@@ -62,6 +64,7 @@ gradlew bootRun
 ```
 
 ### 테스트 실행
+
 ```bash
 # 모든 테스트 실행
 gradlew test
@@ -74,6 +77,7 @@ gradlew test --tests "*ControllerTests"
 ```
 
 ### 기타 유용한 명령어
+
 ```bash
 # 빌드 산출물 정리
 gradlew clean
@@ -121,31 +125,36 @@ src/
 ### 주요 컴포넌트 구조
 
 #### 1. 컨트롤러 레이어
+
 - `UploadController`: 업로드 페이지 표시 및 파일 업로드 처리
 - `QRCodeController` (선택): QR 코드 생성 엔드포인트
 
 #### 2. 서비스 레이어
+
 - `FileUploadService`: 파일 업로드 비즈니스 로직 처리
-  - 파일 검증 (타입, 크기)
-  - NAS 업로드 처리
-  - 폴더 생성 및 중복 처리
+    - 파일 검증 (타입, 크기)
+    - NAS 업로드 처리
+    - 폴더 생성 및 중복 처리
 - `NasStorageService`: Synology NAS 연동
-  - NAS 연결 관리
-  - 파일 전송
-  - 폴더 존재 여부 확인 및 생성
+    - NAS 연결 관리
+    - 파일 전송
+    - 폴더 존재 여부 확인 및 생성
 - `QRCodeService` (선택): QR 코드 생성
 
 #### 3. DTO/모델
+
 - `UploadRequest`: 업로드 요청 정보 (이름, 파일)
 - `UploadResponse`: 업로드 결과 정보
 
 #### 4. 설정 클래스
+
 - `NasConfig`: NAS 연결 설정 관리
 - `FileUploadConfig`: 파일 업로드 설정 (크기 제한, 허용 타입 등)
 
 ## 의존성
 
 현재 포함된 의존성:
+
 - `spring-boot-starter-web` - REST 및 MVC 지원
 - `spring-boot-starter-thymeleaf` - 템플릿 엔진
 - `lombok` - 코드 생성 (애노테이션 처리 필요)
@@ -167,29 +176,32 @@ src/
 ### 주요 엔드포인트
 
 #### `GET /`
+
 - **설명**: 메인 업로드 페이지 표시
 - **응답**: Thymeleaf 템플릿 렌더링 (이름 입력, 파일 선택 UI)
 - **템플릿**: `templates/upload.html`
 
 #### `POST /upload`
+
 - **설명**: 이미지 파일 업로드 처리
 - **요청 파라미터**:
-  - `userName` (String): 업로드하는 사용자의 이름
-  - `files` (MultipartFile[]): 업로드할 이미지 파일(들)
+    - `userName` (String): 업로드하는 사용자의 이름
+    - `files` (MultipartFile[]): 업로드할 이미지 파일(들)
 - **응답**:
-  - 성공 시: 업로드 성공 메시지 및 저장된 파일 정보
-  - 실패 시: 에러 메시지 및 상태 코드
+    - 성공 시: 업로드 성공 메시지 및 저장된 파일 정보
+    - 실패 시: 에러 메시지 및 상태 코드
 - **처리 흐름**:
-  1. 입력 검증 (이름 존재 여부, 파일 존재 여부)
-  2. 파일 타입 및 크기 검증
-  3. NAS 폴더 존재 확인 및 생성 (중복 시 번호 부여)
-  4. 파일 NAS 업로드
-  5. 결과 응답
+    1. 입력 검증 (이름 존재 여부, 파일 존재 여부)
+    2. 파일 타입 및 크기 검증
+    3. NAS 폴더 존재 확인 및 생성 (중복 시 번호 부여)
+    4. 파일 NAS 업로드
+    5. 결과 응답
 
 #### `GET /qr` (선택 사항)
+
 - **설명**: 업로드 페이지 QR 코드 생성
 - **요청 파라미터**:
-  - `url` (선택): QR 코드로 인코딩할 URL (기본값: 서버의 루트 URL)
+    - `url` (선택): QR 코드로 인코딩할 URL (기본값: 서버의 루트 URL)
 - **응답**: QR 코드 이미지 (PNG)
 
 ## 환경 설정
@@ -200,12 +212,10 @@ src/
 # 애플리케이션 설정
 spring.application.name=WedSnap
 server.port=8080
-
 # 파일 업로드 설정
 spring.servlet.multipart.enabled=true
 spring.servlet.multipart.max-file-size=10MB
 spring.servlet.multipart.max-request-size=50MB
-
 # Synology NAS 연결 설정 (TODO: 구체적인 연결 방식 결정 필요)
 nas.host=192.168.x.x
 nas.port=5000
@@ -213,7 +223,6 @@ nas.protocol=webdav
 nas.username=${NAS_USERNAME}
 nas.password=${NAS_PASSWORD}
 nas.base-path=/photos/wedsnap
-
 # 파일 업로드 설정
 upload.allowed-extensions=jpg,jpeg,png,heic,gif
 upload.max-file-size=10485760
@@ -230,6 +239,7 @@ export NAS_PASSWORD="your_nas_password"
 ```
 
 또는 `.env` 파일 사용 (프로덕션 환경에서 권장):
+
 ```
 NAS_USERNAME=your_nas_username
 NAS_PASSWORD=your_nas_password
@@ -240,22 +250,26 @@ NAS_PASSWORD=your_nas_password
 ## 보안 고려사항
 
 ### 1. 파일 검증
+
 - **파일 타입 검증**: MIME 타입 확인 및 허용된 확장자만 수락
 - **파일 크기 제한**: 개별 파일 및 전체 요청 크기 제한
 - **악성 파일 방지**: 파일 내용 검증 (매직 넘버 확인)
 
 ### 2. 입력 검증
+
 - **이름 검증**: 특수 문자 제한, 길이 제한
 - **경로 인젝션 방지**: 이름에 경로 구분자(`/`, `\`, `..`) 포함 방지
 - **XSS 방지**: 사용자 입력 이스케이프 처리
 
 ### 3. NAS 연결 보안
+
 - **인증 정보 암호화**: 설정 파일에 평문 저장 금지
 - **환경 변수 사용**: 민감한 정보는 환경 변수로 관리
 - **연결 타임아웃**: 장시간 대기 방지
 - **재시도 로직**: 일시적 네트워크 오류 처리
 
 ### 4. 접근 제어
+
 - **CORS 설정**: 필요 시 특정 도메인만 허용
 - **Rate Limiting**: 무분별한 업로드 방지 (선택 사항)
 - **세션 관리**: 필요 시 세션 기반 업로드 제한
@@ -306,6 +320,7 @@ NAS_PASSWORD=your_nas_password
 ```
 
 ### 폴더 명명 규칙
+
 - 기본: `{사용자_이름}`
 - 중복 시: `{사용자_이름}_{순차번호}`
 - 순차 번호는 2부터 시작
@@ -314,6 +329,7 @@ NAS_PASSWORD=your_nas_password
 ## 구현 예정 및 TODO 항목
 
 ### 우선순위 높음
+
 - [ ] **NAS 연동 방식 결정**: WebDAV, SMB/CIFS, FTP 중 선택
 - [ ] **NAS 연결 라이브러리 선택 및 통합**
 - [ ] **업로드 컨트롤러 구현**
@@ -323,6 +339,7 @@ NAS_PASSWORD=your_nas_password
 - [ ] **모바일 반응형 UI 구현**
 
 ### 우선순위 중간
+
 - [ ] **QR 코드 생성 기능**: 라이브러리 선택 (ZXing 등)
 - [ ] **파일 검증 강화**: MIME 타입, 매직 넘버 확인
 - [ ] **업로드 진행률 표시**: JavaScript 프로그레스 바
@@ -330,6 +347,7 @@ NAS_PASSWORD=your_nas_password
 - [ ] **다중 파일 업로드 지원**
 
 ### 우선순위 낮음 (향후 고려)
+
 - [ ] **업로드 내역 저장**: 데이터베이스 통합
 - [ ] **관리자 페이지**: 업로드 통계, 사용자 관리
 - [ ] **이미지 썸네일 생성**: 미리보기 기능
@@ -338,6 +356,7 @@ NAS_PASSWORD=your_nas_password
 - [ ] **이미지 자동 회전**: EXIF Orientation 처리
 
 ### 기술적 결정 필요
+
 - [ ] **NAS 연결 방식**: WebDAV vs SMB vs FTP?
 - [ ] **이미지 파일 형식**: HEIC 지원 여부?
 - [ ] **파일명 처리**: 원본 파일명 유지 vs UUID 생성?
@@ -349,3 +368,17 @@ NAS_PASSWORD=your_nas_password
 - 이 프로젝트는 Lombok을 사용하므로 IDE에 Lombok 플러그인이 설치되어 있고 애노테이션 처리가 활성화되어 있는지 확인하세요
 - 애플리케이션은 기본적으로 포트 8080에서 실행됩니다 (`application.properties`에서 설정 가능)
 - Java 툴체인은 버전 17로 설정되어 있습니다 - JDK 17 이상이 설치되어 있어야 합니다
+
+## 협업 및 배포 가이드
+
+WedSnap 프로젝트의 Git 워크플로우 및 CI/CD 파이프라인에 대한 상세 내용은 아래 문서를 참고하세요:
+
+### Git 워크플로우
+
+- **문서**: `GIT_FLOW.md`
+- **내용**: Git 브랜치 전략, 커밋 컨벤션, Pull Request 프로세스 등
+
+### CI/CD 파이프라인
+
+- **문서**: `CICD.md`
+- **내용**: GitHub Actions 기반 자동화, Docker 배포, 환경별 설정 등
