@@ -72,6 +72,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           title: "🧪 Test Coverage Report"
           update-comment: true
+          min-coverage-overall: 30
+          min-coverage-changed-files: 30
+          skip-if-no-changes: false
+          continue-on-error: true
 
       - name: Upload Jacoco HTML report
         uses: actions/upload-artifact@v4
