@@ -102,12 +102,52 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             echo "🛰️  배포 시작..."
-            echo "📦 Docker 이미지 태그: ${{ needs.set-environment.outputs.build_env }}"
+            BUILD_ENV="${{ needs.set-environment.outputs.build_env }}"
+            echo "📦 Docker 이미지 태그: ${BUILD_ENV}"
+
+            # 환경별 설정
+            if [ "${BUILD_ENV}" = "prod" ]; then
+              CONTAINER_NAME="wedsnap-prod"
+              HOST_PORT="8080"
+              DOMAIN="wedsnap.agfe2.synology.me"
+            elif [ "${BUILD_ENV}" = "dev" ]; then
+              CONTAINER_NAME="wedsnap-dev"
+              HOST_PORT="8081"
+              DOMAIN="wedsnap-dev.agfe2.synology.me"
+            fi
+
+            echo "🔧 환경: ${BUILD_ENV}"
+            echo "📦 컨테이너: ${CONTAINER_NAME}"
+            echo "🔌 포트: ${HOST_PORT}:8080"
+            echo "🌐 도메인: https://${DOMAIN}"
+
             export PATH=$PATH:/usr/local/bin
-            docker pull ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${{ needs.set-environment.outputs.build_env }}
-            docker stop wedsnap || true
-            docker rm wedsnap || true
-            docker run -d --name wedsnap \
-              -p 8080:8080 \
-              ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${{ needs.set-environment.outputs.build_env }}
-            echo "✅ 배포 완료!"
+
+            # 최신 이미지 Pull
+            echo "📥 이미지 다운로드 중..."
+            docker pull ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${BUILD_ENV}
+
+            # 기존 컨테이너 중지 및 삭제
+            echo "🛑 기존 컨테이너 정리 중..."
+            docker stop ${CONTAINER_NAME} 2>/dev/null || true
+            docker rm ${CONTAINER_NAME} 2>/dev/null || true
+
+            # 새 컨테이너 시작
+            echo "🚀 새 컨테이너 시작 중..."
+            docker run -d \
+              --name ${CONTAINER_NAME} \
+              --restart=unless-stopped \
+              -p ${HOST_PORT}:8080 \
+              ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${BUILD_ENV}
+
+            # 컨테이너 상태 확인
+            sleep 3
+            if docker ps | grep -q ${CONTAINER_NAME}; then
+              echo "✅ 배포 완료!"
+              echo "✅ 컨테이너: ${CONTAINER_NAME}"
+              echo "✅ 접속 URL: https://${DOMAIN}"
+            else
+              echo "❌ 배포 실패: 컨테이너가 실행되지 않았습니다."
+              docker logs ${CONTAINER_NAME}
+              exit 1
+            fi
