@@ -20,12 +20,13 @@
       "Bash(git push:*)",
       "Bash(mkdir:*)",
       "mcp__serena__create_text_file",
-      "mcp__serena__replace_regex"
+      "mcp__serena__replace_regex",
+      "WebFetch(domain:mermaid.js.org)"
     ],
     "deny": [],
     "ask": []
   },
-  "enableAllProjectMcpServers": false,
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "context7",
     "serena",
