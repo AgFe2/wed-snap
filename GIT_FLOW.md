@@ -215,12 +215,12 @@ graph LR
     B --> C[최종 테스트<br/>버그 수정]
     C --> D[GitHub에<br/>Push]
     D --> E[PR 생성<br/>main ← release]
-    E --> F[최종 리뷰]
-    F --> G[main에 머지]
-    G --> H[릴리스 태그 생성]
-    H --> I[PR 생성<br/>dev ← release]
-    I --> J[dev에 머지]
-    J --> K[release 브랜치<br/>삭제]
+E --> F[최종 리뷰]
+F --> G[main에 머지]
+G --> H[릴리스 태그 생성]
+H --> I[PR 생성<br/>dev ← release]
+I --> J[dev에 머지]
+J --> K[release 브랜치<br/>삭제]
 ```
 
 #### 릴리스 브랜치의 기본 원리
@@ -284,12 +284,12 @@ graph LR
     B --> C[버전 번호<br/>패치 증가]
     C --> D[GitHub에<br/>Push]
     D --> E[PR 생성<br/>main ← hotfix]
-    E --> F[긴급 리뷰]
-    F --> G[main에 머지]
-    G --> H[핫픽스 태그 생성]
-    H --> I[PR 생성<br/>dev ← hotfix]
-    I --> J[dev에 머지]
-    J --> K[hotfix 브랜치<br/>삭제]
+E --> F[긴급 리뷰]
+F --> G[main에 머지]
+G --> H[핫픽스 태그 생성]
+H --> I[PR 생성<br/>dev ← hotfix]
+I --> J[dev에 머지]
+J --> K[hotfix 브랜치<br/>삭제]
 ```
 
 #### 단계별 명령어
@@ -622,6 +622,331 @@ refactor: 파일 업로드 서비스 리팩토링
 - [ ] 충돌 없음
 - [ ] 테스트 통과 (있는 경우)
 - [ ] 최신 base 브랜치와 동기화
+
+### Merge 전략
+
+Pull Request를 머지할 때 사용하는 전략에 따라 Git 히스토리의 모양과 가독성이 달라집니다. WedSnap 프로젝트에서는 상황에 따라 적절한 Merge 전략을 사용합니다.
+
+#### Merge 전략 개요
+
+Git에서 브랜치를 병합하는 세 가지 주요 방법:
+
+| 전략                          | 설명                              | 히스토리 특징         | 사용 시나리오                   |
+|-----------------------------|---------------------------------|-----------------|---------------------------|
+| **Squash Merge**            | 모든 커밋을 하나로 압축하여 병합              | 깔끔하고 선형적        | Feature → dev             |
+| **Regular Merge (--no-ff)** | 모든 커밋 히스토리 유지 및 merge commit 생성 | 브랜치 구조 명확       | Release/Hotfix → main/dev |
+| **Fast-Forward Merge**      | 단순히 포인터만 이동 (merge commit 없음)   | 선형적, 브랜치 경계 불명확 | 사용 안 함 (권장하지 않음)          |
+
+#### 상황별 권장 Merge 전략
+
+```mermaid
+graph TD
+    A[PR 머지 상황] --> B{어떤 브랜치?}
+    B -->|Feature → dev| C[Squash Merge]
+    B -->|Release → main| D[Regular Merge]
+    B -->|Release → dev| D
+    B -->|Hotfix → main| D
+    B -->|Hotfix → dev| D
+    C --> E[깔끔한 히스토리<br/>기능 단위 관리]
+    D --> F[전체 히스토리 유지<br/>버전 추적 명확]
+```
+
+**요약표**:
+
+| 병합 유형              | 권장 전략                       | 주요 이유                         |
+|--------------------|-----------------------------|-------------------------------|
+| **Feature → dev**  | **Squash Merge**            | 깔끔한 히스토리, 기능 단위 관리, 쉬운 revert |
+| **Release → main** | **Regular Merge (--no-ff)** | 릴리스 히스토리 유지, 버전 추적 명확         |
+| **Release → dev**  | **Regular Merge (--no-ff)** | main과 일관성 유지                  |
+| **Hotfix → main**  | **Regular Merge (--no-ff)** | 긴급 패치 이력 유지                   |
+| **Hotfix → dev**   | **Regular Merge (--no-ff)** | main과 일관성 유지                  |
+
+#### 1. Feature → dev: Squash Merge
+
+**왜 Squash Merge를 사용하나요?**
+
+Feature 브랜치 개발 중에는 다음과 같은 커밋들이 생성됩니다:
+
+- "WIP: 작업 중"
+- "임시 저장"
+- "오타 수정"
+- "리뷰 반영"
+
+이런 커밋들은 개발 과정에서는 유용하지만, dev 브랜치의 히스토리에는 불필요합니다.
+
+**장점**:
+
+- ✅ dev 브랜치의 히스토리가 깔끔하게 유지됨
+- ✅ 하나의 기능 = 하나의 커밋으로 관리되어 이해하기 쉬움
+- ✅ 문제 발생 시 해당 기능 전체를 쉽게 revert 가능
+- ✅ `git log`로 히스토리 확인 시 가독성이 매우 높음
+- ✅ git bisect 사용 시 더 효과적
+
+**단점**:
+
+- ⚠️ Feature의 상세 개발 과정은 사라짐 (하지만 PR에서 확인 가능)
+- ⚠️ 개별 커밋의 작성자 정보가 일부 손실될 수 있음 (Co-authored-by로 보완 가능)
+
+**실전 예시**:
+
+```bash
+# Feature 브랜치의 커밋 히스토리 (PR 전)
+* abc1234 - feat: 파일 크기 검증 추가
+* abc1235 - fix: 오타 수정
+* abc1236 - refactor: 변수명 개선
+* abc1237 - test: 단위 테스트 추가
+* abc1238 - docs: 주석 추가
+
+# Squash Merge 후 dev 브랜치
+* def5678 - feat: 이미지 업로드 기능 추가 (#42)
+  |
+  | 모든 변경사항이 하나의 커밋으로 압축됨
+```
+
+**GitHub에서 Squash Merge 사용하기**:
+
+1. PR 페이지에서 "Merge pull request" 버튼 옆 ▼ 클릭
+2. **"Squash and merge"** 선택
+3. 커밋 메시지 확인 및 수정
+4. "Confirm squash and merge" 클릭
+
+**Git 명령어로 수동 Squash Merge** (로컬에서 직접 하는 경우):
+
+```bash
+# dev 브랜치로 전환
+git checkout dev
+git pull origin dev
+
+# feature 브랜치를 squash merge
+git merge --squash feature/image-upload
+
+# 하나의 커밋으로 생성
+git commit -m "feat: 이미지 업로드 기능 추가
+
+- 다중 파일 업로드 지원
+- 파일 크기 검증 (최대 10MB)
+- 이미지 타입 검증 (JPG, PNG, GIF)
+- 업로드 진행률 표시
+
+Closes #42"
+
+# dev에 푸시
+git push origin dev
+
+# feature 브랜치 삭제
+git branch -d feature/image-upload
+git push origin --delete feature/image-upload
+```
+
+#### 2. Release/Hotfix → main/dev: Regular Merge
+
+**왜 Regular Merge를 사용하나요?**
+
+Release와 Hotfix 브랜치는 배포와 직접 관련되어 있어, 각 변경사항의 히스토리가 중요합니다.
+
+**Release 브랜치의 중요한 커밋들**:
+
+- 버전 번호 업데이트
+- CHANGELOG 작성
+- 릴리스 테스트 중 발견된 버그 수정
+- 설정 파일 조정
+
+**Hotfix 브랜치의 중요한 커밋들**:
+
+- 긴급 버그 수정
+- 핫픽스 버전 번호 업데이트
+- 테스트 코드 추가
+
+이런 커밋들은 모두 추적 가능해야 하며, 나중에 "왜 이렇게 변경했는지" 파악할 수 있어야 합니다.
+
+**장점**:
+
+- ✅ 모든 커밋 히스토리가 보존됨
+- ✅ 릴리스/핫픽스 시점이 Git 그래프에서 명확히 표시됨
+- ✅ 태그(`v1.0.0`)와 함께 사용하면 버전 관리가 명확
+- ✅ cherry-pick으로 가져온 커밋들의 원본 이력 유지
+- ✅ 문제 발생 시 정확한 원인 추적 가능
+- ✅ release → main과 release → dev 머지 전략이 동일하여 일관성 유지
+
+**단점**:
+
+- ⚠️ 히스토리가 복잡해질 수 있음 (하지만 이는 실제 개발 흐름을 반영)
+- ⚠️ Merge commit이 추가로 생성됨
+
+**실전 예시**:
+
+```bash
+# Release 브랜치의 커밋 히스토리
+* xyz1234 - chore: v1.0.0 릴리스 준비
+* xyz1235 - fix: 릴리스 테스트 중 발견된 버그 수정
+* xyz1236 - docs: CHANGELOG.md 업데이트
+
+# Regular Merge 후 main 브랜치
+*   merge1234 - Merge branch 'release/v1.0.0' into main
+|\
+| * xyz1236 - docs: CHANGELOG.md 업데이트
+| * xyz1235 - fix: 릴리스 테스트 중 발견된 버그 수정
+| * xyz1234 - chore: v1.0.0 릴리스 준비
+|/
+* commit5678 - (이전 main 커밋)
+```
+
+**GitHub에서 Regular Merge 사용하기**:
+
+1. PR 페이지에서 "Merge pull request" 버튼 옆 ▼ 클릭
+2. **"Create a merge commit"** 선택
+3. 커밋 메시지 확인 (기본값: "Merge pull request #X from branch-name")
+4. "Confirm merge" 클릭
+
+**Git 명령어로 수동 Regular Merge** (로컬에서 직접 하는 경우):
+
+```bash
+# main 브랜치로 전환
+git checkout main
+git pull origin main
+
+# release 브랜치를 regular merge (--no-ff로 항상 merge commit 생성)
+git merge --no-ff release/v1.0.0 -m "Merge release/v1.0.0"
+
+# main에 푸시
+git push origin main
+
+# 태그 생성
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+
+# dev에도 동일하게 머지
+git checkout dev
+git pull origin dev
+git merge --no-ff release/v1.0.0 -m "Merge release/v1.0.0 into dev"
+git push origin dev
+
+# release 브랜치 삭제
+git branch -d release/v1.0.0
+git push origin --delete release/v1.0.0
+```
+
+**Hotfix도 동일한 방식**:
+
+```bash
+# main에 머지
+git checkout main
+git pull origin main
+git merge --no-ff hotfix/upload-error -m "Merge hotfix/upload-error"
+git push origin main
+
+# 태그 생성
+git tag -a v1.0.1 -m "Hotfix v1.0.1"
+git push origin v1.0.1
+
+# dev에도 머지
+git checkout dev
+git pull origin dev
+git merge --no-ff hotfix/upload-error -m "Merge hotfix/upload-error into dev"
+git push origin dev
+
+# hotfix 브랜치 삭제
+git branch -d hotfix/upload-error
+git push origin --delete hotfix/upload-error
+```
+
+#### Merge 전략 비교표
+
+| 항목          | Squash Merge                  | Regular Merge (--no-ff)   | Fast-Forward            |
+|-------------|-------------------------------|---------------------------|-------------------------|
+| **커밋 개수**   | 1개 (압축됨)                      | 모두 유지 + merge commit      | 모두 유지 (merge commit 없음) |
+| **히스토리**    | 선형적, 깔끔                       | 브랜치 구조 명확                 | 선형적, 브랜치 경계 불명확         |
+| **Revert**  | 쉬움 (1개만 revert)               | 개별 커밋별 가능                 | 어려움                     |
+| **작성자 정보**  | 주 작성자만 (Co-authored-by 추가 가능) | 모두 유지                     | 모두 유지                   |
+| **Git 그래프** | 단순                            | 복잡하지만 명확                  | 단순하지만 모호                |
+| **추천 사용**   | Feature → dev                 | Release/Hotfix → main/dev | 사용 안 함                  |
+
+#### GitHub Repository 설정
+
+Repository 설정에서 허용할 merge 방식을 제한할 수 있습니다.
+
+**설정 방법**:
+
+1. GitHub Repository 페이지 이동
+2. **Settings** > **General** > **Pull Requests** 섹션
+3. "Allow merge commits", "Allow squash merging", "Allow rebase merging" 옵션 확인
+
+**권장 설정**:
+
+```
+✅ Allow merge commits
+   └─ Default to merge commit (for release/hotfix branches)
+
+✅ Allow squash merging
+   └─ Default to squash merging (for feature branches)
+
+❌ Allow rebase merging
+   (소규모 팀에서는 복잡도 증가로 권장하지 않음)
+```
+
+#### 실무 팁
+
+**1. PR 생성 시 merge 전략 명시**
+
+PR 설명에 권장 merge 전략을 명시하면 리뷰어가 헷갈리지 않습니다:
+
+```markdown
+## Merge 방법
+
+이 PR은 feature 브랜치이므로 **Squash and merge**를 사용해 주세요.
+```
+
+**2. 브랜치별 기본 전략 안내**
+
+팀원들에게 다음 규칙을 공유하세요:
+
+```
+Feature 브랜치 → dev: "Squash and merge" 버튼 사용
+Release/Hotfix → main/dev: "Create a merge commit" 버튼 사용
+```
+
+**3. Squash 커밋 메시지 작성 가이드**
+
+GitHub에서 Squash merge 시 커밋 메시지를 잘 작성하세요:
+
+```
+feat: 이미지 업로드 기능 추가
+
+- 다중 파일 업로드 지원
+- 파일 크기 검증 (최대 10MB)
+- 이미지 타입 검증 (JPG, PNG, GIF)
+- 업로드 진행률 표시
+- 에러 처리 개선
+
+Co-authored-by: 홍길동 <hong@example.com>
+Co-authored-by: 김철수 <kim@example.com>
+
+Closes #42
+```
+
+**4. Release/Hotfix는 절대 Squash하지 마세요**
+
+Release와 Hotfix를 squash merge하면:
+
+- ❌ 버전 업데이트 커밋이 사라짐
+- ❌ CHANGELOG 작성 커밋이 사라짐
+- ❌ 각 버그 수정의 이력이 사라짐
+- ❌ cherry-pick으로 가져온 커밋의 원본 추적 불가능
+
+**5. 히스토리 확인하기**
+
+각 전략의 결과를 확인하려면:
+
+```bash
+# 그래프로 히스토리 확인
+git log --graph --oneline --all
+
+# Squash merge된 커밋 찾기
+git log --grep="feat:" --oneline
+
+# 특정 릴리스의 모든 커밋 보기
+git log v1.0.0..v1.1.0 --oneline
+```
 
 ---
 
@@ -1005,9 +1330,10 @@ git remote prune origin
 
 ## 문서 개정 이력
 
-| 버전    | 날짜         | 변경 내용 | 작성자 |
-|-------|------------|-------|-----|
-| 1.0.0 | 2025-10-12 | 초안 작성 | -   |
+| 버전    | 날짜         | 변경 내용          | 작성자 |
+|-------|------------|----------------|-----|
+| 1.1.0 | 2025-10-12 | Merge 전략 섹션 추가 | -   |
+| 1.0.0 | 2025-10-12 | 초안 작성          | -   |
 
 ---
 
