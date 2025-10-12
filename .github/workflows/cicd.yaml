@@ -64,15 +64,22 @@ jobs:
       - name: Run tests with coverage
         run: ./gradlew clean test jacocoTestReport jacocoTestCoverageVerification
 
-      - name: Show coverage summary
-        run: |
-          echo "=== Jacoco Coverage Summary ==="
-          grep -A 3 '<counter type="LINE"' build/reports/jacoco/test/jacocoTestReport.xml || true
 
-      ##TODO : 리포트 작성
+      - name: Jacoco Report Summary
+        uses: madrapps/jacoco-report@v1.7.1
+        with:
+          paths: build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "🧪 Test Coverage Report"
+          update-comment: true
+
+      - name: Upload Jacoco HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: build/reports/jacoco/test/html
 
       - name: Build JAR
-        if: github.ref_name == 'main' || github.ref_name == 'dev'
         run: ./gradlew build
 
       - name: Build & Push Docker Image with Jib
