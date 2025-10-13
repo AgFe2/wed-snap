@@ -265,7 +265,7 @@ body {
 .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--accent-rose) 0%, var(--pastel-pink) 100%);
-    width: 0%;
+    width: 0;
     transition: width 0.3s ease;
     border-radius: 4px;
 }
@@ -356,14 +356,14 @@ body {
     transform: translateX(-50%) translateY(100px);
     background: rgba(90, 74, 66, 0.95);
     color: white;
-    padding: 1rem 1.5rem;
+    padding: 1rem 2rem;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     font-size: 0.9rem;
     opacity: 0;
     transition: all 0.3s ease;
     z-index: 2000;
-    max-width: 90%;
+    width: 80%;
     text-align: center;
     white-space: pre-line;
 }

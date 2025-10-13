@@ -56,7 +56,7 @@ function formatFileSize(bytes) {
 /**
  * Toast 메시지 표시
  */
-function showToast(message, duration = 2000) {
+function showToast(message, duration = 3000) {
     toastQueue.push({ message, duration });
     if (!isShowingToast) {
         processToastQueue();
@@ -118,7 +118,7 @@ function handleFileSelect(event) {
     // 파일 수 제한 확인
     const totalFiles = selectedFiles.length + files.length;
     if (totalFiles > MAX_FILES) {
-        showToast(`최대 ${MAX_FILES}장까지만 선택할 수 있습니다.\n${MAX_FILES - selectedFiles.length}장을 추가하실 수 있습니다.`);
+        showToast(`최대 ${MAX_FILES}장 제한 (추가 가능: ${MAX_FILES - selectedFiles.length}장)`);
         return;
     }
 
@@ -154,16 +154,16 @@ function handleFileSelect(event) {
 
     // 사용자 피드백
     if (invalidTypeFiles.length > 0) {
-        showToast(`다음 파일은 지원하지 않는 형식입니다:\n${invalidTypeFiles.join('\n')}`);
+        showToast(`지원하지 않는 형식:\n${invalidTypeFiles.join('\n')}`);
     }
 
     if (oversizedFiles.length > 0) {
         const message = oversizedFiles.map(f => `${f.name} (${f.size})`).join('\n');
-        showToast(`다음 파일은 용량이 너무 큽니다 (최대 ${formatFileSize(MAX_FILE_SIZE)}):\n${message}`);
+        showToast(`${formatFileSize(MAX_FILE_SIZE)} 초과:\n${message}`);
     }
 
     if (heicFiles.length > 0) {
-        showToast(`HEIC 형식 파일이 ${heicFiles.length}개 포함되어 있습니다.\n미리보기가 표시되지 않을 수 있으나,\n업로드는 정상적으로 처리됩니다.`);
+        showToast(`HEIC ${heicFiles.length}개 포함 (미리보기 제한, 업로드 가능)`);
     }
 
     if (validFiles.length > 0) {
@@ -174,9 +174,9 @@ function handleFileSelect(event) {
         // 성공 피드백: 추가로 선택 가능한 개수 표시
         const remainingSlots = MAX_FILES - selectedFiles.length;
         if (remainingSlots > 0) {
-            showToast(`${validFiles.length}장의 사진이 추가되었습니다.\n${remainingSlots}장 더 선택할 수 있습니다.`);
+            showToast(`${validFiles.length}장 추가 (추가 가능: ${remainingSlots}장)`);
         } else {
-            showToast(`${validFiles.length}장의 사진이 추가되었습니다.\n최대 개수에 도달했습니다.`);
+            showToast(`${validFiles.length}장 추가 (최대 도달)`);
         }
     }
 
