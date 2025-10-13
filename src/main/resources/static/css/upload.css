@@ -348,6 +348,31 @@ body {
     box-shadow: 0 6px 16px var(--shadow-medium);
 }
 
+/* Toast 알림 */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: rgba(90, 74, 66, 0.95);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 2000;
+    max-width: 90%;
+    text-align: center;
+    white-space: pre-line;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
 /* 애니메이션 */
 @keyframes fadeIn {
     from {
