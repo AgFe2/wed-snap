@@ -1,18 +1,19 @@
 package me.agfe.wedsnap.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.agfe.wedsnap.dto.UploadRequest;
 import me.agfe.wedsnap.dto.UploadResponse;
 import me.agfe.wedsnap.service.UploadService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
 
 @Slf4j
 @RestController
@@ -22,22 +23,16 @@ public class UploadRestController {
 
     private final UploadService uploadService;
 
-    @PostMapping("/upload")
+    @PostMapping(value = "/upload", consumes = "multipart/form-data")
     public ResponseEntity<UploadResponse> upload(
-            @RequestParam(required = false, defaultValue = "test") String eventId,
-            @RequestParam String uploaderName,
+            @Valid @RequestPart("info") UploadRequest request,
             @RequestParam("files") List<MultipartFile> files
     ) {
-        UploadRequest request = UploadRequest.builder()
-                .eventId(eventId)
-                .uploaderName(uploaderName)
-                .files(files)
-                .build();
 
         log.info("Upload request received: eventId={}, uploader={}, files={}",
-                eventId, uploaderName, files.size());
+                request.getEventId(), request.getUploaderName(), files);
 
-        UploadResponse response = uploadService.processUpload(request);
+        UploadResponse response = uploadService.processUpload(request, files);
         return ResponseEntity.ok(response);
     }
 }
