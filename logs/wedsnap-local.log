@@ -1,0 +1,65 @@
+2025-10-15T10:31:14.030+09:00  INFO 29168 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : Starting WedSnapApplication using Java 21.0.8 with PID 29168 (C:\Users\maple\Documents\WedSnap\build\classes\java\main started by maple in C:\Users\maple\Documents\WedSnap)
+2025-10-15T10:31:14.032+09:00 DEBUG 29168 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : Running with Spring Boot v3.5.6, Spring v6.2.11
+2025-10-15T10:31:14.033+09:00  INFO 29168 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : The following 1 profile is active: "local"
+2025-10-15T10:31:15.584+09:00  INFO 29168 --- [WedSnap] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-10-15T10:31:15.601+09:00  INFO 29168 --- [WedSnap] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-10-15T10:31:15.602+09:00  INFO 29168 --- [WedSnap] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2025-10-15T10:31:15.675+09:00  INFO 29168 --- [WedSnap] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-10-15T10:31:15.676+09:00  INFO 29168 --- [WedSnap] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1600 ms
+2025-10-15T10:31:16.045+09:00  INFO 29168 --- [WedSnap] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2025-10-15T10:31:16.647+09:00  INFO 29168 --- [WedSnap] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2025-10-15T10:31:16.736+09:00  INFO 29168 --- [WedSnap] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-10-15T10:31:16.749+09:00  INFO 29168 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : Started WedSnapApplication in 3.299 seconds (process running for 3.624)
+2025-10-15T10:33:42.180+09:00  INFO 29168 --- [WedSnap] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-10-15T10:33:42.180+09:00  INFO 29168 --- [WedSnap] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-10-15T10:33:42.182+09:00  INFO 29168 --- [WedSnap] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-10-15T10:33:42.232+09:00  INFO 29168 --- [WedSnap] [http-nio-8080-exec-1] m.a.wedsnap.controller.UploadController  : Upload page requested
+2025-10-15T10:34:41.454+09:00  INFO 28196 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : Starting WedSnapApplication using Java 21.0.8 with PID 28196 (C:\Users\maple\Documents\WedSnap\build\classes\java\main started by maple in C:\Users\maple\Documents\WedSnap)
+2025-10-15T10:34:41.457+09:00 DEBUG 28196 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : Running with Spring Boot v3.5.6, Spring v6.2.11
+2025-10-15T10:34:41.458+09:00  INFO 28196 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : The following 1 profile is active: "local"
+2025-10-15T10:34:42.817+09:00  INFO 28196 --- [WedSnap] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-10-15T10:34:42.836+09:00  INFO 28196 --- [WedSnap] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-10-15T10:34:42.837+09:00  INFO 28196 --- [WedSnap] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2025-10-15T10:34:42.899+09:00  INFO 28196 --- [WedSnap] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-10-15T10:34:42.899+09:00  INFO 28196 --- [WedSnap] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1397 ms
+2025-10-15T10:34:43.233+09:00  INFO 28196 --- [WedSnap] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2025-10-15T10:34:43.711+09:00  INFO 28196 --- [WedSnap] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2025-10-15T10:34:43.798+09:00  INFO 28196 --- [WedSnap] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-10-15T10:34:43.811+09:00  INFO 28196 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : Started WedSnapApplication in 2.895 seconds (process running for 3.219)
+2025-10-15T10:34:46.857+09:00  INFO 28196 --- [WedSnap] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-10-15T10:34:46.857+09:00  INFO 28196 --- [WedSnap] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-10-15T10:34:46.858+09:00  INFO 28196 --- [WedSnap] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2025-10-15T10:34:46.902+09:00  INFO 28196 --- [WedSnap] [http-nio-8080-exec-1] m.a.wedsnap.controller.UploadController  : Upload page requested
+2025-10-15T10:34:49.400+09:00  INFO 28196 --- [WedSnap] [http-nio-8080-exec-2] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 284 ms
+2025-10-15T10:46:57.037+09:00  INFO 17100 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : Starting WedSnapApplication using Java 21.0.8 with PID 17100 (C:\Users\maple\Documents\WedSnap\build\classes\java\main started by maple in C:\Users\maple\Documents\WedSnap)
+2025-10-15T10:46:57.041+09:00 DEBUG 17100 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : Running with Spring Boot v3.5.6, Spring v6.2.11
+2025-10-15T10:46:57.042+09:00  INFO 17100 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : The following 1 profile is active: "local"
+2025-10-15T10:46:58.743+09:00  INFO 17100 --- [WedSnap] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-10-15T10:46:58.769+09:00  INFO 17100 --- [WedSnap] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-10-15T10:46:58.769+09:00  INFO 17100 --- [WedSnap] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2025-10-15T10:46:58.841+09:00  INFO 17100 --- [WedSnap] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-10-15T10:46:58.841+09:00  INFO 17100 --- [WedSnap] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1741 ms
+2025-10-15T10:46:59.240+09:00  INFO 17100 --- [WedSnap] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2025-10-15T10:46:59.740+09:00  INFO 17100 --- [WedSnap] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2025-10-15T10:46:59.806+09:00  INFO 17100 --- [WedSnap] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-10-15T10:46:59.820+09:00  INFO 17100 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : Started WedSnapApplication in 3.371 seconds (process running for 3.679)
+2025-10-15T10:47:01.628+09:00  INFO 17100 --- [WedSnap] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-10-15T10:47:01.628+09:00  INFO 17100 --- [WedSnap] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-10-15T10:47:01.629+09:00  INFO 17100 --- [WedSnap] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-10-15T10:47:01.682+09:00  INFO 17100 --- [WedSnap] [http-nio-8080-exec-1] m.a.wedsnap.controller.UploadController  : Upload page requested
+2025-10-15T10:47:20.597+09:00  INFO 17100 --- [WedSnap] [http-nio-8080-exec-4] m.a.w.controller.UploadRestController    : Upload request received: eventId=test, uploader=유은호, files=3
+2025-10-15T10:47:20.617+09:00  INFO 17100 --- [WedSnap] [http-nio-8080-exec-4] m.a.wedsnap.repository.UploadRepository  : [local] File saved: Maple_A_231007_030708.jpg -> C:\temp\wedsnap\event-test\유은호\655af8d8-0ab9-470e-9748-90547d0c8301.jpg
+2025-10-15T10:47:20.628+09:00  INFO 17100 --- [WedSnap] [http-nio-8080-exec-4] m.a.wedsnap.repository.UploadRepository  : [local] File saved: Maple_A_231007_031158.jpg -> C:\temp\wedsnap\event-test\유은호\2e74148e-533c-4170-a5da-724fd7393d71.jpg
+2025-10-15T10:47:20.638+09:00  INFO 17100 --- [WedSnap] [http-nio-8080-exec-4] m.a.wedsnap.repository.UploadRepository  : [local] File saved: Maple_A_231008_034749.jpg -> C:\temp\wedsnap\event-test\유은호\d68bec48-6fa9-4dc4-9878-1b0d251d2e23.jpg
+2025-10-15T10:50:56.063+09:00  INFO 36848 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : Starting WedSnapApplication using Java 21.0.8 with PID 36848 (C:\Users\maple\Documents\WedSnap\build\classes\java\main started by maple in C:\Users\maple\Documents\WedSnap)
+2025-10-15T10:50:56.066+09:00 DEBUG 36848 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : Running with Spring Boot v3.5.6, Spring v6.2.11
+2025-10-15T10:50:56.067+09:00  INFO 36848 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : The following 1 profile is active: "local"
+2025-10-15T10:50:57.427+09:00  INFO 36848 --- [WedSnap] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-10-15T10:50:57.448+09:00  INFO 36848 --- [WedSnap] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-10-15T10:50:57.449+09:00  INFO 36848 --- [WedSnap] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2025-10-15T10:50:57.514+09:00  INFO 36848 --- [WedSnap] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-10-15T10:50:57.515+09:00  INFO 36848 --- [WedSnap] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1396 ms
+2025-10-15T10:50:57.913+09:00  INFO 36848 --- [WedSnap] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2025-10-15T10:50:58.473+09:00  INFO 36848 --- [WedSnap] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2025-10-15T10:50:58.579+09:00  INFO 36848 --- [WedSnap] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-10-15T10:50:58.593+09:00  INFO 36848 --- [WedSnap] [main] me.agfe.wedsnap.WedSnapApplication       : Started WedSnapApplication in 3.037 seconds (process running for 3.354)

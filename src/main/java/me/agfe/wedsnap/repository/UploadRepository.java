@@ -13,8 +13,11 @@ import java.util.UUID;
 @Repository
 public class UploadRepository {
 
-    @Value("${wedsnap.upload.base-path:/nas/wedsnap}")
+    @Value("${wedsnap.upload.base-path}")
     private String basePath;
+
+    @Value("${wedsnap.environment}")
+    private String environment;
 
     public String saveFile(String eventId, String uploaderName, MultipartFile file) throws IOException {
         String ext = "";
@@ -29,7 +32,7 @@ public class UploadRepository {
 
         Path targetPath = uploadDir.resolve(newFileName);
         file.transferTo(targetPath);
-        log.info("✅ File saved: {} -> {}", originalName, targetPath);
+        log.info("[{}] File saved: {} -> {}", environment, originalName, targetPath);
 
         return newFileName;
     }

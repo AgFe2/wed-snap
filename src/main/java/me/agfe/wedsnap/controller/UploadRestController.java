@@ -24,8 +24,8 @@ public class UploadRestController {
 
     @PostMapping("/upload")
     public ResponseEntity<UploadResponse> upload(
-            @RequestParam("eventId") String eventId,
-            @RequestParam("uploaderName") String uploaderName,
+            @RequestParam(required = false, defaultValue = "test") String eventId,
+            @RequestParam String uploaderName,
             @RequestParam("files") List<MultipartFile> files
     ) {
         UploadRequest request = UploadRequest.builder()
@@ -34,7 +34,7 @@ public class UploadRestController {
                 .files(files)
                 .build();
 
-        log.info("📤 Upload request received: eventId={}, uploader={}, files={}",
+        log.info("Upload request received: eventId={}, uploader={}, files={}",
                 eventId, uploaderName, files.size());
 
         UploadResponse response = uploadService.processUpload(request);
