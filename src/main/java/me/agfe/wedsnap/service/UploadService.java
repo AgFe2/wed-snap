@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.agfe.wedsnap.dto.*;
 import me.agfe.wedsnap.repository.UploadRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,13 +17,18 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UploadService {
 
-    private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "gif");
+    private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "gif", "heif");
+
+    @Value("${wedsnap.environment}")
+    private String environment;
 
     private final UploadRepository uploadRepository;
 
-    public UploadResponse processUpload(UploadRequest request, List<MultipartFile> files) {
+    public UploadResponse processUpload(UploadRequest request) {
+        String uniqueUploader = getUniqueUploaderName(request.getEventName(), request.getUploaderName());
+        request.setUploaderName(uniqueUploader);
 
-        validateFiles(files);
+        List<MultipartFile> files = request.getFiles();
 
         List<String> failedFiles = new ArrayList<>();
         int successCount = 0;
@@ -30,14 +36,11 @@ public class UploadService {
         synchronized (this) {
             for (MultipartFile file : files) {
                 try {
-                    if (file.isEmpty()) {
-                        failedFiles.add(file.getOriginalFilename());
-                        continue;
-                    }
-                    uploadRepository.saveFile(request.getEventId(), request.getUploaderName(), file);
+                    validateFile(file);
+                    uploadRepository.saveFile(request.getEventName(), request.getUploaderName(), file);
                     successCount++;
-                } catch (IOException e) {
-                    log.error("❌ Failed to save file: {}", file.getOriginalFilename(), e);
+                } catch (IllegalArgumentException | IOException e) {
+                    log.error("[{}] Failed to save file: {} → {}", environment, file.getOriginalFilename(), e.getMessage());
                     failedFiles.add(file.getOriginalFilename());
                 }
             }
@@ -46,8 +49,11 @@ public class UploadService {
         int total = files.size();
         int failCount = failedFiles.size();
 
+        log.info("Upload Request processed: eventName={}, Uploader={} files={}, 성공 {}, 실패 {}, ",
+                request.getEventName(), uniqueUploader, total, successCount, failCount);
+
         return UploadResponse.builder()
-                .eventId(request.getEventId())
+                .eventName(request.getEventName())
                 .uploaderName(request.getUploaderName())
                 .totalFiles(total)
                 .successCount(successCount)
@@ -58,27 +64,28 @@ public class UploadService {
                 .build();
     }
 
-    private void validateFiles(List<MultipartFile> files) {
-        if (files == null || files.isEmpty()) {
-            throw new IllegalArgumentException("업로드할 파일이 없습니다.");
+    private void validateFile(MultipartFile file) {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("빈 파일은 업로드 할 수 없습니다.");
         }
 
-        for (MultipartFile file : files) {
-            String fileName = file.getOriginalFilename();
+        String fileName = file.getOriginalFilename();
+        if (fileName == null || fileName.isBlank()) {
+            throw new IllegalArgumentException("파일 이름이 비어있습니다.");
+        }
 
-            if (fileName == null || fileName.isBlank()) {
-                throw new IllegalArgumentException("파일 이름이 비어있습니다.");
-            }
-
-            String ext = getFileExtension(fileName);
-            if (!ALLOWED_EXTENSIONS.contains(ext.toLowerCase())) {
-                throw new IllegalArgumentException("허용되지 않은 파일 형식입니다");
-            }
+        String ext = getFileExtension(fileName);
+        if (!ALLOWED_EXTENSIONS.contains(ext.toLowerCase())) {
+            throw new IllegalArgumentException("허용되지 않은 파일 형식입니다: " + fileName);
         }
     }
 
     private String getFileExtension(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');
         return (dotIndex > 0) ? fileName.substring(dotIndex + 1) : "";
+    }
+
+    private String getUniqueUploaderName(String eventName, String uploaderName) {
+        return uploadRepository.findUniqueUploaderName(eventName, uploaderName);
     }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class UploadResponse {
-    private String eventId;
+    private String eventName;
     private String uploaderName;
     private int totalFiles;
     private int successCount;
