@@ -1,0 +1,13 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+wedsnap:
+  environment: dev
+  upload:
+    base-path: "/nas/wedsnap"
+
+logging:
+  file:
+    name: /var/log/wedsnap/wedsnap-dev.log
