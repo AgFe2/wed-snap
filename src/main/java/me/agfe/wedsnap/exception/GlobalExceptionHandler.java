@@ -1,20 +1,19 @@
 package me.agfe.wedsnap.exception;
 
-import lombok.extern.slf4j.Slf4j;
-import me.agfe.wedsnap.dto.CommonApiResponse;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import me.agfe.wedsnap.dto.CommonApiResponse;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     @ExceptionHandler(IllegalArgumentException.class)
     public CommonApiResponse<Void> handleIllegalArgument(IllegalArgumentException ex) {
         log.warn("IllegalArgumentException: {}", ex.getMessage());

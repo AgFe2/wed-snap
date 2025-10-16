@@ -193,10 +193,10 @@ ${DOCKER_REGISTRY_URL}/wedsnap:${BUILD_ENV}
 
 ### 환경별 배포 설정
 
-| 환경 | 브랜치 | 컨테이너 이름 | 호스트 포트 | 도메인 | 이미지 태그 |
-|------|--------|---------------|-------------|--------|-------------|
-| **Production** | `main` | `wedsnap-prod` | 8080 | `wedsnap.agfe2.synology.me` | `wedsnap:prod` |
-| **Development** | `dev` | `wedsnap-dev` | 8081 | `wedsnap-dev.agfe2.synology.me` | `wedsnap:dev` |
+| 환경              | 브랜치    | 컨테이너 이름        | 호스트 포트 | 도메인                             | 이미지 태그         |
+|-----------------|--------|----------------|--------|---------------------------------|----------------|
+| **Production**  | `main` | `wedsnap-prod` | 8080   | `wedsnap.agfe2.synology.me`     | `wedsnap:prod` |
+| **Development** | `dev`  | `wedsnap-dev`  | 8081   | `wedsnap-dev.agfe2.synology.me` | `wedsnap:dev`  |
 
 ### CD 단계별 설명
 
@@ -266,10 +266,10 @@ WedSnap은 Synology NAS의 Reverse Proxy 기능을 사용하여 포트 번호 �
 
 ### 접속 URL
 
-| 환경 | HTTPS URL (포트 생략) | 내부 포트 |
-|------|----------------------|-----------|
-| **Production** | `https://wedsnap.agfe2.synology.me` | 8080 |
-| **Development** | `https://wedsnap-dev.agfe2.synology.me` | 8081 |
+| 환경              | HTTPS URL (포트 생략)                       | 내부 포트 |
+|-----------------|-----------------------------------------|-------|
+| **Production**  | `https://wedsnap.agfe2.synology.me`     | 8080  |
+| **Development** | `https://wedsnap-dev.agfe2.synology.me` | 8081  |
 
 ### 동작 원리
 
@@ -303,12 +303,14 @@ Docker 컨테이너
 **규칙 이름**: `WedSnap Production`
 
 **소스 (외부 접속):**
+
 - 프로토콜: `HTTPS`
 - 호스트 이름: `wedsnap.agfe2.synology.me`
 - 포트: `443`
 - HSTS 활성화: ✅ (권장)
 
 **대상 (내부 서버):**
+
 - 프로토콜: `HTTP`
 - 호스트 이름: `localhost`
 - 포트: `8080`
@@ -318,12 +320,14 @@ Docker 컨테이너
 **규칙 이름**: `WedSnap Development`
 
 **소스 (외부 접속):**
+
 - 프로토콜: `HTTPS`
 - 호스트 이름: `wedsnap-dev.agfe2.synology.me`
 - 포트: `443`
 - HSTS 활성화: ✅ (권장)
 
 **대상 (내부 서버):**
+
 - 프로토콜: `HTTP`
 - 호스트 이름: `localhost`
 - 포트: `8081`
@@ -348,20 +352,22 @@ Connection: $connection_upgrade
 3. **새 인증서 추가** 선택
 
 **옵션 A: Let's Encrypt (자동 갱신)**
+
 - 도메인 이름: `*.agfe2.synology.me`
 - 이메일 주소 입력
 - DNS 공급자 설정 (Synology DDNS 사용 시 자동)
 
 **옵션 B: 기존 인증서 가져오기**
+
 - 개인 키, 인증서, 중간 인증서 업로드
 
 #### 2. 인증서 서비스별 할당
 
 1. **설정** → **인증서 설정**
 2. 다음 서비스에 인증서 할당:
-   - `wedsnap.agfe2.synology.me` → 와일드카드 인증서
-   - `wedsnap-dev.agfe2.synology.me` → 와일드카드 인증서
-   - 또는 각 서브도메인별 개별 인증서
+    - `wedsnap.agfe2.synology.me` → 와일드카드 인증서
+    - `wedsnap-dev.agfe2.synology.me` → 와일드카드 인증서
+    - 또는 각 서브도메인별 개별 인증서
 
 ### 네트워크 설정
 
@@ -369,10 +375,10 @@ Connection: $connection_upgrade
 
 라우터 관리 페이지에서 다음 포트를 포워딩합니다:
 
-| 외부 포트 | 내부 IP | 내부 포트 | 프로토콜 | 설명 |
-|----------|---------|----------|---------|------|
-| **443** | Synology NAS IP | 443 | TCP | HTTPS (필수) |
-| **80** | Synology NAS IP | 80 | TCP | HTTP → HTTPS 리다이렉트 (권장) |
+| 외부 포트   | 내부 IP           | 내부 포트 | 프로토콜 | 설명                      |
+|---------|-----------------|-------|------|-------------------------|
+| **443** | Synology NAS IP | 443   | TCP  | HTTPS (필수)              |
+| **80**  | Synology NAS IP | 80    | TCP  | HTTP → HTTPS 리다이렉트 (권장) |
 
 **중요:** 기존에 8080 포트를 외부에 오픈했다면, 이제는 **제거**할 수 있습니다. Reverse Proxy가 내부적으로 처리하기 때문입니다.
 
@@ -382,11 +388,11 @@ Synology DSM 방화벽 설정:
 
 1. **제어판** → **보안** → **방화벽**
 2. 다음 규칙 허용:
-   - 포트 443 (HTTPS) - 모든 IP
-   - 포트 80 (HTTP) - 모든 IP
+    - 포트 443 (HTTPS) - 모든 IP
+    - 포트 80 (HTTP) - 모든 IP
 3. 다음 규칙 차단 (선택 사항, 보안 강화):
-   - 포트 8080 - 외부 접근 차단 (Reverse Proxy만 접근)
-   - 포트 8081 - 외부 접근 차단 (Reverse Proxy만 접근)
+    - 포트 8080 - 외부 접근 차단 (Reverse Proxy만 접근)
+    - 포트 8081 - 외부 접근 차단 (Reverse Proxy만 접근)
 
 ### Synology DDNS 설정
 
@@ -401,6 +407,7 @@ Synology DSM 방화벽 설정:
 #### 2. 서브도메인 자동 지원
 
 Synology DDNS는 와일드카드 서브도메인을 자동으로 지원합니다:
+
 - `agfe2.synology.me` 등록 시
 - `*.agfe2.synology.me` 모두 동일한 IP로 라우팅됨
 - 따라서 `wedsnap.agfe2.synology.me`, `wedsnap-dev.agfe2.synology.me` 별도 등록 불필요
@@ -441,11 +448,13 @@ echo | openssl s_client -connect wedsnap.agfe2.synology.me:443 -servername wedsn
 #### 1. "사이트에 연결할 수 없음" 오류
 
 **원인:**
+
 - 포트 포워딩 미설정
 - DDNS 미갱신
 - 방화벽 차단
 
 **해결 방법:**
+
 ```bash
 # 1. 라우터 포트 포워딩 확인 (443 포트)
 # 2. Synology DDNS 상태 확인
@@ -456,11 +465,13 @@ telnet agfe2.synology.me 443
 #### 2. "인증서 오류" 경고
 
 **원인:**
+
 - 인증서 만료
 - 도메인 불일치
 - 중간 인증서 누락
 
 **해결 방법:**
+
 1. **제어판** → **보안** → **인증서** 확인
 2. Let's Encrypt 인증서 자동 갱신 활성화
 3. 인증서 재발급
@@ -468,10 +479,12 @@ telnet agfe2.synology.me 443
 #### 3. "502 Bad Gateway" 오류
 
 **원인:**
+
 - Docker 컨테이너 중지됨
 - 포트 매핑 오류
 
 **해결 방법:**
+
 ```bash
 # 컨테이너 상태 확인
 docker ps | grep wedsnap
@@ -488,31 +501,33 @@ docker logs wedsnap-dev --tail 50
 #### 4. HTTP로 접속되는 문제
 
 **원인:**
+
 - HTTPS 리다이렉트 미설정
 
 **해결 방법:**
+
 1. Reverse Proxy 규칙에서 HSTS 활성화
 2. 또는 별도 HTTP → HTTPS 리다이렉트 규칙 생성:
-   - 소스: HTTP, 포트 80
-   - 대상: HTTPS, 포트 443
+    - 소스: HTTP, 포트 80
+    - 대상: HTTPS, 포트 443
 
 ### 보안 권장사항
 
 1. **HSTS (HTTP Strict Transport Security) 활성화**
-   - Reverse Proxy 규칙에서 HSTS 옵션 체크
-   - 브라우저가 항상 HTTPS로 접속하도록 강제
+    - Reverse Proxy 규칙에서 HSTS 옵션 체크
+    - 브라우저가 항상 HTTPS로 접속하도록 강제
 
 2. **포트 8080, 8081 외부 접근 차단**
-   - 방화벽에서 차단
-   - Reverse Proxy를 통해서만 접근 가능
+    - 방화벽에서 차단
+    - Reverse Proxy를 통해서만 접근 가능
 
 3. **Let's Encrypt 자동 갱신**
-   - Synology DSM의 자동 갱신 기능 활성화
-   - 인증서 만료 90일 전 자동 갱신
+    - Synology DSM의 자동 갱신 기능 활성화
+    - 인증서 만료 90일 전 자동 갱신
 
 4. **로그 모니터링**
-   - DSM 로그 센터에서 Reverse Proxy 접속 로그 확인
-   - 비정상적인 접근 패턴 모니터링
+    - DSM 로그 센터에서 Reverse Proxy 접속 로그 확인
+    - 비정상적인 접근 패턴 모니터링
 
 ---
 
@@ -624,11 +639,11 @@ docker run -p 8080:8080 wedsnap:dev
 
 ### 브랜치별 동작
 
-| 브랜치         | BUILD_ENV | CI 실행 | 이미지 빌드 | CD 실행 | 배포 대상                | 컨테이너 이름     | 포트  | 도메인                            |
-|-------------|-----------|-------|--------|-------|----------------------|--------------|-------|--------------------------------|
-| `main`      | `prod`    | ✅     | ✅      | ✅     | Synology NAS (프로덕션) | wedsnap-prod | 8080  | wedsnap.agfe2.synology.me      |
-| `dev`       | `dev`     | ✅     | ✅      | ✅     | Synology NAS (개발)    | wedsnap-dev  | 8081  | wedsnap-dev.agfe2.synology.me  |
-| `feature/*` | `feature` | ✅     | ❌      | ❌     | 없음                   | -            | -     | -                              |
+| 브랜치         | BUILD_ENV | CI 실행 | 이미지 빌드 | CD 실행 | 배포 대상               | 컨테이너 이름      | 포트   | 도메인                           |
+|-------------|-----------|-------|--------|-------|---------------------|--------------|------|-------------------------------|
+| `main`      | `prod`    | ✅     | ✅      | ✅     | Synology NAS (프로덕션) | wedsnap-prod | 8080 | wedsnap.agfe2.synology.me     |
+| `dev`       | `dev`     | ✅     | ✅      | ✅     | Synology NAS (개발)   | wedsnap-dev  | 8081 | wedsnap-dev.agfe2.synology.me |
+| `feature/*` | `feature` | ✅     | ❌      | ❌     | 없음                  | -            | -    | -                             |
 
 ### 권장 워크플로우
 
@@ -1272,6 +1287,7 @@ docker run -d --name wedsnap-dev --restart=unless-stopped -p 8081:8080 wedsnap:d
 **문서 버전**: 2.0
 **최종 업데이트**: 2025-10-12
 **주요 변경사항**:
+
 - dev 브랜치 배포 로직 추가
 - Reverse Proxy 및 HTTPS 설정 가이드 추가
 - 환경별 포트 분리 (prod: 8080, dev: 8081)

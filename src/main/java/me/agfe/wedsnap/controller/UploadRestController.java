@@ -1,5 +1,15 @@
 package me.agfe.wedsnap.controller;
 
+import java.util.List;
+
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -9,13 +19,6 @@ import me.agfe.wedsnap.dto.UploadRequest;
 import me.agfe.wedsnap.dto.UploadResponse;
 import me.agfe.wedsnap.service.UploadService;
 import me.agfe.wedsnap.validation.NoProfanity;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-
 
 @Slf4j
 @Validated
@@ -41,13 +44,13 @@ public class UploadRestController {
             @RequestParam List<MultipartFile> files
     ) {
         log.info("Upload request received: eventId={}, uploader={}, files={}",
-                eventName, uploaderName, files != null ? files.size() : 0);
+                 eventName, uploaderName, files != null ? files.size() : 0);
 
         UploadRequest request = UploadRequest.builder()
-                .eventName(eventName)
-                .uploaderName(uploaderName)
-                .files(files)
-                .build();
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(files)
+                                             .build();
 
         UploadResponse response = uploadService.processUpload(request);
         return CommonApiResponse.success(response);

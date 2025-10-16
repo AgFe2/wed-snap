@@ -1,8 +1,9 @@
 package me.agfe.wedsnap.validation;
 
+import java.util.List;
+
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import java.util.List;
 
 public class ProfanityValidator implements ConstraintValidator<NoProfanity, String> {
 

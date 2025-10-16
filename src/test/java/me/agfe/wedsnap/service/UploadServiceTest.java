@@ -1,8 +1,18 @@
 package me.agfe.wedsnap.service;
 
-import me.agfe.wedsnap.dto.UploadRequest;
-import me.agfe.wedsnap.dto.UploadResponse;
-import me.agfe.wedsnap.repository.UploadRepository;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,13 +24,9 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import me.agfe.wedsnap.dto.UploadRequest;
+import me.agfe.wedsnap.dto.UploadResponse;
+import me.agfe.wedsnap.repository.UploadRepository;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UploadService 테스트")
@@ -54,10 +60,10 @@ class UploadServiceTest {
         );
 
         UploadRequest request = UploadRequest.builder()
-                .eventName(eventName)
-                .uploaderName(uploaderName)
-                .files(List.of(file))
-                .build();
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(List.of(file))
+                                             .build();
 
         when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
                 .thenReturn(uniqueUploaderName);
@@ -101,10 +107,10 @@ class UploadServiceTest {
         );
 
         UploadRequest request = UploadRequest.builder()
-                .eventName(eventName)
-                .uploaderName(uploaderName)
-                .files(Arrays.asList(file1, file2, file3))
-                .build();
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(Arrays.asList(file1, file2, file3))
+                                             .build();
 
         when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
                 .thenReturn(uniqueUploaderName);
@@ -136,10 +142,10 @@ class UploadServiceTest {
         );
 
         UploadRequest request = UploadRequest.builder()
-                .eventName(eventName)
-                .uploaderName(uploaderName)
-                .files(List.of(emptyFile))
-                .build();
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(List.of(emptyFile))
+                                             .build();
 
         when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
                 .thenReturn(uniqueUploaderName);
@@ -170,10 +176,10 @@ class UploadServiceTest {
         );
 
         UploadRequest request = UploadRequest.builder()
-                .eventName(eventName)
-                .uploaderName(uploaderName)
-                .files(List.of(fileWithNullName))
-                .build();
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(List.of(fileWithNullName))
+                                             .build();
 
         when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
                 .thenReturn(uniqueUploaderName);
@@ -202,10 +208,10 @@ class UploadServiceTest {
         );
 
         UploadRequest request = UploadRequest.builder()
-                .eventName(eventName)
-                .uploaderName(uploaderName)
-                .files(List.of(invalidFile))
-                .build();
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(List.of(invalidFile))
+                                             .build();
 
         when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
                 .thenReturn(uniqueUploaderName);
@@ -240,10 +246,10 @@ class UploadServiceTest {
         );
 
         UploadRequest request = UploadRequest.builder()
-                .eventName(eventName)
-                .uploaderName(uploaderName)
-                .files(Arrays.asList(validFile, invalidFile, emptyFile))
-                .build();
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(Arrays.asList(validFile, invalidFile, emptyFile))
+                                             .build();
 
         when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
                 .thenReturn(uniqueUploaderName);
@@ -276,10 +282,10 @@ class UploadServiceTest {
         );
 
         UploadRequest request = UploadRequest.builder()
-                .eventName(eventName)
-                .uploaderName(uploaderName)
-                .files(List.of(file))
-                .build();
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(List.of(file))
+                                             .build();
 
         when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
                 .thenReturn(uniqueUploaderName);
@@ -308,10 +314,10 @@ class UploadServiceTest {
         );
 
         UploadRequest request = UploadRequest.builder()
-                .eventName(eventName)
-                .uploaderName(uploaderName)
-                .files(List.of(file))
-                .build();
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(List.of(file))
+                                             .build();
 
         when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
                 .thenReturn(uniqueUploaderName);
@@ -342,10 +348,10 @@ class UploadServiceTest {
         );
 
         UploadRequest request = UploadRequest.builder()
-                .eventName(eventName)
-                .uploaderName(uploaderName)
-                .files(List.of(upperCaseFile))
-                .build();
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(List.of(upperCaseFile))
+                                             .build();
 
         when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
                 .thenReturn(uniqueUploaderName);
@@ -375,10 +381,10 @@ class UploadServiceTest {
         );
 
         UploadRequest request = UploadRequest.builder()
-                .eventName(eventName)
-                .uploaderName(uploaderName)
-                .files(List.of(heifFile))
-                .build();
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(List.of(heifFile))
+                                             .build();
 
         when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
                 .thenReturn(uniqueUploaderName);
@@ -408,10 +414,10 @@ class UploadServiceTest {
         );
 
         UploadRequest request = UploadRequest.builder()
-                .eventName(eventName)
-                .uploaderName(uploaderName)
-                .files(List.of(noExtFile))
-                .build();
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(List.of(noExtFile))
+                                             .build();
 
         when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
                 .thenReturn(uniqueUploaderName);
