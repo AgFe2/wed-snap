@@ -206,27 +206,38 @@ src/
 
 ## 환경 설정
 
-### application.properties 필수 설정
+### application.yml 필수 설정
 
-```properties
+```yaml
 # 애플리케이션 설정
-spring.application.name=WedSnap
-server.port=8080
-# 파일 업로드 설정
-spring.servlet.multipart.enabled=true
-spring.servlet.multipart.max-file-size=10MB
-spring.servlet.multipart.max-request-size=50MB
+spring:
+  application:
+    name: WedSnap
+  # 파일 업로드 설정
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+# 서버 설정
+server:
+  port: 8080
+
 # Synology NAS 연결 설정 (TODO: 구체적인 연결 방식 결정 필요)
-nas.host=192.168.x.x
-nas.port=5000
-nas.protocol=webdav
-nas.username=${NAS_USERNAME}
-nas.password=${NAS_PASSWORD}
-nas.base-path=/photos/wedsnap
+nas:
+  host: 192.168.x.x
+  port: 5000
+  protocol: webdav
+  username: ${NAS_USERNAME}
+  password: ${NAS_PASSWORD}
+  base-path: /photos/wedsnap
+
 # 파일 업로드 설정
-upload.allowed-extensions=jpg,jpeg,png,heic,gif
-upload.max-file-size=10485760
-upload.folder-name-pattern={userName}
+upload:
+  allowed-extensions: jpg,jpeg,png,heic,gif
+  max-file-size: 10485760
+  folder-name-pattern: "{userName}"
 ```
 
 ### 환경 변수
@@ -332,19 +343,19 @@ NAS_PASSWORD=your_nas_password
 
 - [ ] **NAS 연동 방식 결정**: WebDAV, SMB/CIFS, FTP 중 선택
 - [ ] **NAS 연결 라이브러리 선택 및 통합**
-- [ ] **업로드 컨트롤러 구현**
+- [ ] **업로드 컨트롤러 구현** (백엔드 API 엔드포인트)
 - [ ] **파일 업로드 서비스 로직 구현**
 - [ ] **폴더 중복 처리 로직 구현**
-- [ ] **Thymeleaf 업로드 페이지 작성**
-- [ ] **모바일 반응형 UI 구현**
+- [x] **Thymeleaf 업로드 페이지 작성** ✅ (upload.html 완성)
+- [x] **모바일 반응형 UI 구현** ✅ (upload.css 반응형 미디어 쿼리 적용)
 
 ### 우선순위 중간
 
 - [ ] **QR 코드 생성 기능**: 라이브러리 선택 (ZXing 등)
-- [ ] **파일 검증 강화**: MIME 타입, 매직 넘버 확인
-- [ ] **업로드 진행률 표시**: JavaScript 프로그레스 바
-- [ ] **에러 처리 및 사용자 피드백 개선**
-- [ ] **다중 파일 업로드 지원**
+- [x] **파일 검증 강화** ✅ (파일 타입, 크기 검증 구현 - upload.js)
+- [ ] **업로드 진행률 표시** 현재 JavaScript 임시 프로그레스 바 구현 - upload.js
+- [x] **에러 처리 및 사용자 피드백 개선** ✅ (Toast 알림 시스템 구현 - upload.js)
+- [x] **다중 파일 업로드 지원** ✅ (최대 20장, 10MB 제한 - upload.js)
 
 ### 우선순위 낮음 (향후 고려)
 
@@ -352,16 +363,16 @@ NAS_PASSWORD=your_nas_password
 - [ ] **관리자 페이지**: 업로드 통계, 사용자 관리
 - [ ] **이미지 썸네일 생성**: 미리보기 기능
 - [ ] **이미지 메타데이터 추출**: EXIF 정보 저장
-- [ ] **업로드 제한**: IP별, 세션별 제한
+- [ ] **업로드 제한**: Rate limit
 - [ ] **이미지 자동 회전**: EXIF Orientation 처리
 
 ### 기술적 결정 필요
 
 - [ ] **NAS 연결 방식**: WebDAV vs SMB vs FTP?
-- [ ] **이미지 파일 형식**: HEIC 지원 여부?
-- [ ] **파일명 처리**: 원본 파일명 유지 vs UUID 생성?
+- [x] **이미지 파일 형식** ✅ HEIC 지원 (미리보기 제한, 업로드 가능 - upload.js)
+- [ ] **파일명 처리** ✅ 원본 파일명 유지 (현재 구현)
 - [ ] **동시 업로드 처리**: 동시성 제어 필요 여부?
-- [ ] **사용자 이름 중복 정책**: 숫자 부여 vs 타임스탬프 추가?
+- [x] **사용자 이름 중복 정책** ✅ 순차 번호 부여 방식 채택 (CLAUDE.md 명시)
 
 ## 개발 참고사항
 
