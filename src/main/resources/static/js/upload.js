@@ -275,17 +275,6 @@ async function handleUpload() {
   uploadBtn.disabled = true;
   progressSection.style.display = 'block';
 
-  // FormData 준비
-  const formData = new FormData();
-  formData.append('userName', userName);
-  selectedFiles.forEach(file => {
-    formData.append('files', file);
-  });
-
-  // ========================================
-  // TODO: 백엔드 구현 후 아래 주석 해제
-  // ========================================
-
   try {
     const formData = new FormData();
     formData.append('uploaderName', userName);
@@ -293,45 +282,54 @@ async function handleUpload() {
       formData.append('files', file);
     });
 
-    const response = await fetch('/api/events/devEvent/upload', {
-      method: 'POST',
-      body: formData
-    });
+    // XMLHttpRequest를 사용하여 실제 업로드 진행률 추적
+    const xhr = new XMLHttpRequest();
 
-    if (!response.ok) {
-      throw new Error('업로드에 실패했습니다.');
-    }
+    // 진행률 이벤트 핸들러
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percentage = Math.round((event.loaded / event.total) * 100);
+        updateProgress(percentage);
+      }
+    };
 
-    const result = await response.json();
-    showSuccess();
+    // 업로드 완료 핸들러
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const result = JSON.parse(xhr.responseText);
+        // TODO: 백엔드 응답 데이터 활용 (예: 업로드된 파일 수, 저장 경로 등)
+        showSuccess();
+      } else {
+        // 에러 응답 처리
+        let errorMessage = '업로드에 실패했습니다.';
+
+        try {
+          // TODO: 백엔드 에러 응답(CommonApiResponse)에서 구체적인 에러 메시지 파싱 및 표시 구현 필요
+          const errorResponse = JSON.parse(xhr.responseText);
+          // errorMessage = errorResponse.message || errorMessage;
+        } catch (e) {
+          // JSON 파싱 실패 시 기본 에러 메시지 사용
+        }
+
+        showToast('업로드 중 오류가 발생했습니다.\n' + errorMessage, 4000);
+        resetUploadState();
+      }
+    };
+
+    // 네트워크 에러 핸들러
+    xhr.onerror = () => {
+      showToast('업로드 중 네트워크 오류가 발생했습니다.', 4000);
+      resetUploadState();
+    };
+
+    // 요청 전송
+    xhr.open('POST', '/api/events/devEvent/upload');
+    xhr.send(formData);
   } catch (error) {
     console.error('Upload error:', error);
     showToast('업로드 중 오류가 발생했습니다.\n' + error.message, 4000);
     resetUploadState();
   }
-
-  // ========================================
-  // 임시 시뮬레이션 (백엔드 구현 전)
-  // ========================================
-  //simulateUpload();
-}
-
-/**
- * 업로드 시뮬레이션 (임시)
- */
-function simulateUpload() {
-  let progress = 0;
-  const interval = setInterval(() => {
-    progress += 5;
-    updateProgress(progress);
-
-    if (progress >= 100) {
-      clearInterval(interval);
-      setTimeout(() => {
-        showSuccess();
-      }, 300);
-    }
-  }, 100);
 }
 
 /**
