@@ -41,7 +41,9 @@ public class UploadRepository {
     public String findUniqueUploaderName(String eventId, String uploaderName) {
         Path baseDir = Paths.get(basePath, "event-" + eventId);
         File dir = baseDir.toFile();
-        if (!dir.exists()) dir.mkdirs();
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
 
         File target = new File(dir, uploaderName);
         if (!target.exists()) {
