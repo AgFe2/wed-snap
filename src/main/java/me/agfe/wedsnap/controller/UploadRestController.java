@@ -50,7 +50,7 @@ public class UploadRestController {
                 .build();
 
         UploadResponse response = uploadService.processUpload(request);
-        return ResponseEntity.ok(response);
+        return CommonApiResponse.success(response);
     }
 }
 
