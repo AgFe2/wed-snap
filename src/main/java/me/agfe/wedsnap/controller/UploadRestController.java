@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.agfe.wedsnap.dto.CommonApiResponse;
 import me.agfe.wedsnap.dto.UploadRequest;
 import me.agfe.wedsnap.dto.UploadResponse;
 import me.agfe.wedsnap.service.UploadService;
@@ -26,7 +27,7 @@ public class UploadRestController {
     private final UploadService uploadService;
 
     @PostMapping(value = "/events/{eventName}/upload")
-    public ResponseEntity<UploadResponse> upload(
+    public CommonApiResponse<UploadResponse> upload(
             @PathVariable String eventName,
 
             @NotBlank
