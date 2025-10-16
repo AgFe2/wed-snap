@@ -145,10 +145,17 @@ jobs:
 
             # 새 컨테이너 시작
             echo "🚀 새 컨테이너 시작 중..."
+            if [ "${BUILD_ENV}" = "prod" ]; then
+              VOLUME_PATH="docker/wedsnap"
+            elif [ "${BUILD_ENV}" = "dev" ]; then
+              VOLUME_PATH="docker/wedsnap-dev"
+            fi
             docker run -d \
               --name ${CONTAINER_NAME} \
               --restart=unless-stopped \
               -p ${HOST_PORT}:8080 \
+              -v ${VOLUME_PATH}:/nas/wedsnap \
+              -e "SPRING_PROFILES_ACTIVE=${BUILD_ENV} \
               ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${BUILD_ENV}
 
             # 컨테이너 상태 확인
