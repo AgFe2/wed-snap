@@ -1,0 +1,13 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+
+wedsnap:
+  environment: local
+  upload:
+    base-path: "C:/temp/wedsnap"
+
+logging:
+  file:
+    name: logs/wedsnap-local.log

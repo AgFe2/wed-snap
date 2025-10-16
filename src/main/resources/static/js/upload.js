@@ -283,9 +283,15 @@ async function handleUpload() {
     // ========================================
     // TODO: 백엔드 구현 후 아래 주석 해제
     // ========================================
-    /*
+
     try {
-        const response = await fetch('/upload', {
+        const formData = new FormData();
+        formData.append('uploaderName', userName);
+        selectedFiles.forEach(file => {
+            formData.append('files', file);
+        });
+
+        const response = await fetch('/api/upload', {
             method: 'POST',
             body: formData
         });
@@ -301,12 +307,11 @@ async function handleUpload() {
         showToast('업로드 중 오류가 발생했습니다.\n' + error.message, 4000);
         resetUploadState();
     }
-    */
 
     // ========================================
     // 임시 시뮬레이션 (백엔드 구현 전)
     // ========================================
-    simulateUpload();
+    //simulateUpload();
 }
 
 /**
