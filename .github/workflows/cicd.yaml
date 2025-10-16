@@ -99,7 +99,7 @@ jobs:
 
   cd:
     runs-on: ubuntu-latest
-    needs: [set-environment, ci]
+    needs: [ set-environment, ci ]
     if: github.ref_name == 'main' || github.ref_name == 'dev'
     steps:
       - name: Deploy to Synology NAS
@@ -162,3 +162,64 @@ jobs:
               docker logs ${CONTAINER_NAME}
               exit 1
             fi
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [ ci, cd ]
+    if: always()  # 성공/실패 상관없이 항상 실행
+    steps:
+      - name: Send Slack notification (success or failure)
+        run: |
+          # Job 결과 가져오기
+          CI_RESULT="${{ needs.ci.result }}"
+          CD_RESULT="${{ needs.cd.result }}"
+
+          # 상태에 따라 메시지 결정
+          if [[ "$CI_RESULT" == "failure" || "$CD_RESULT" == "failure" ]]; then
+            STATUS="❌ 실패"
+            COLOR="#FF4C4C"
+          else
+            STATUS="✅ 성공"
+            COLOR="#36A64F"
+          fi
+
+          # 실패한 Job 표시
+          FAILED_JOBS=""
+          if [[ "$CI_RESULT" == "failure" ]]; then
+            FAILED_JOBS="${FAILED_JOBS} CI "
+          fi
+          if [[ "$CD_RESULT" == "failure" ]]; then
+            FAILED_JOBS="${FAILED_JOBS} CD "
+          fi
+
+          # Slack 메시지 본문
+          MESSAGE="{
+            \"attachments\": [
+              {
+                \"color\": \"${COLOR}\",
+                \"blocks\": [
+                  {
+                    \"type\": \"section\",
+                    \"text\": {
+                      \"type\": \"mrkdwn\",
+                      \"text\": \"*${STATUS} | GitHub Actions 알림*\n\n• Repository: *${{ github.repository }}*\n• Branch: *${{ github.ref_name }}*\n• 실행자: *${{ github.actor }}*\n• 실행 링크: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Run 보기>\"
+                    }
+                  },
+                  {
+                    \"type\": \"context\",
+                    \"elements\": [
+                      {
+                        \"type\": \"mrkdwn\",
+                        \"text\": \"실패한 Job: *${FAILED_JOBS:-없음}* | CI: ${CI_RESULT} / CD: ${CD_RESULT}\"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }"
+
+          echo "📤 Sending Slack message..."
+          curl -X POST -H 'Content-type: application/json' \
+            --data "${MESSAGE}" \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
