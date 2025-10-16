@@ -32,26 +32,11 @@ public class UploadRepository {
 
         String newFileName = UUID.randomUUID() + ext;
         Path uploadDir = Paths.get(basePath, "event-" + eventId, uploaderName);
-
-        // 디렉토리 생성 (권한 확인 포함)
-        try {
-            Files.createDirectories(uploadDir);
-            log.info("[{}] Directory prepared: {}", environment, uploadDir);
-        } catch (IOException e) {
-            log.error("[{}] Failed to create directory: {} - {}", environment, uploadDir, e.getMessage());
-            throw new IOException("디렉토리 생성 실패 (권한 확인 필요): " + uploadDir, e);
-        }
+        Files.createDirectories(uploadDir);
 
         Path targetPath = uploadDir.resolve(newFileName);
-
-        // 파일 저장
-        try {
-            file.transferTo(targetPath);
-            log.info("[{}] File saved successfully: {} -> {}", environment, originalName, targetPath);
-        } catch (IOException e) {
-            log.error("[{}] Failed to save file: {} -> {} - {}", environment, originalName, targetPath, e.getMessage());
-            throw new IOException("파일 저장 실패: " + originalName, e);
-        }
+        file.transferTo(targetPath);
+        log.info("[{}] File saved: {} -> {}", environment, originalName, targetPath);
 
         return newFileName;
     }
