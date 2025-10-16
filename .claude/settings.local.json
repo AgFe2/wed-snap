@@ -23,10 +23,11 @@
       "mcp__serena__replace_regex",
       "WebFetch(domain:mermaid.js.org)",
       "mcp__sequential-thinking__sequentialthinking",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "mcp__serena__search_for_pattern"
     ],
-    "deny": [ ],
-    "ask": [ ]
+    "deny": [],
+    "ask": []
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [

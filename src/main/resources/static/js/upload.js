@@ -24,11 +24,21 @@ const closeModalBtn = document.getElementById('closeModalBtn');
 // 이벤트 리스너 등록
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('🎉 WedSnap upload.js loaded successfully');
+  console.log('📍 API endpoint:', '/api/events/devEvent/upload');
+  console.log('⚙️ Configuration:', {
+    maxFiles: MAX_FILES,
+    maxFileSize: MAX_FILE_SIZE,
+    allowedTypes: ALLOWED_TYPES
+  });
+
   selectBtn.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', handleFileSelect);
   userNameInput.addEventListener('input', updateUploadButtonState);
   uploadBtn.addEventListener('click', handleUpload);
   closeModalBtn.addEventListener('click', closeModal);
+
+  console.log('✅ Event listeners registered');
 });
 
 // ========================================
@@ -282,6 +292,15 @@ async function handleUpload() {
       formData.append('files', file);
     });
 
+    // 디버깅: 업로드 요청 정보 로그
+    console.log('📤 Upload request started:', {
+      url: '/api/events/devEvent/upload',
+      uploaderName: userName,
+      filesCount: selectedFiles.length,
+      totalSize: selectedFiles.reduce((sum, f) => sum + f.size, 0),
+      files: selectedFiles.map(f => ({ name: f.name, size: f.size, type: f.type }))
+    });
+
     // XMLHttpRequest를 사용하여 실제 업로드 진행률 추적
     const xhr = new XMLHttpRequest();
 
@@ -289,12 +308,18 @@ async function handleUpload() {
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {
         const percentage = Math.round((event.loaded / event.total) * 100);
+        console.log(`📊 Upload progress: ${percentage}%`);
         updateProgress(percentage);
       }
     };
 
     // 업로드 완료 핸들러
     xhr.onload = () => {
+      console.log('✅ Upload completed:', {
+        status: xhr.status,
+        statusText: xhr.statusText,
+        response: xhr.responseText
+      });
       if (xhr.status >= 200 && xhr.status < 300) {
         const result = JSON.parse(xhr.responseText);
         // TODO: 백엔드 응답 데이터 활용 (예: 업로드된 파일 수, 저장 경로 등)
@@ -306,10 +331,18 @@ async function handleUpload() {
         try {
           // TODO: 백엔드 에러 응답(CommonApiResponse)에서 구체적인 에러 메시지 파싱 및 표시 구현 필요
           const errorResponse = JSON.parse(xhr.responseText);
+          console.error('❌ Upload error response:', errorResponse);
           // errorMessage = errorResponse.message || errorMessage;
         } catch (e) {
           // JSON 파싱 실패 시 기본 에러 메시지 사용
+          console.error('❌ Failed to parse error response:', e);
         }
+
+        console.error('❌ Upload failed:', {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          response: xhr.responseText
+        });
 
         showToast('업로드 중 오류가 발생했습니다.\n' + errorMessage, 4000);
         resetUploadState();
@@ -318,6 +351,7 @@ async function handleUpload() {
 
     // 네트워크 에러 핸들러
     xhr.onerror = () => {
+      console.error('❌ Network error during upload');
       showToast('업로드 중 네트워크 오류가 발생했습니다.', 4000);
       resetUploadState();
     };

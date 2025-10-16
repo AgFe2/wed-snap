@@ -8,10 +8,31 @@ spring:
       max-file-size: 10MB
       max-request-size: 200MB
 
+  # 정적 리소스 설정
+  web:
+    resources:
+      static-locations: classpath:/static/
+      cache:
+        cachecontrol:
+          max-age: 3600
+          cache-public: true
+
+  # Thymeleaf 설정
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+
 server:
   port: 8080
+  compression:
+    enabled: true
+    mime-types: text/html,text/css,application/javascript,application/json
+    min-response-size: 1024
 
 logging:
   level:
     root: INFO
     me.agfe.wedsnap: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.resource: TRACE
