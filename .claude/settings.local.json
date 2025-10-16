@@ -21,7 +21,9 @@
       "Bash(mkdir:*)",
       "mcp__serena__create_text_file",
       "mcp__serena__replace_regex",
-      "WebFetch(domain:mermaid.js.org)"
+      "WebFetch(domain:mermaid.js.org)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []
