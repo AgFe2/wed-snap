@@ -41,11 +41,11 @@ public class HealthCheckController {
         log.info("Health check requested");
 
         HealthCheckResponse response = HealthCheckResponse.builder()
-                .status("UP")
-                .message("서버가 정상적으로 동작 중입니다.")
-                .timestamp(LocalDateTime.now())
-                .serverInfo("WedSnap Server v1.0")
-                .build();
+                                                          .status("UP")
+                                                          .message("서버가 정상적으로 동작 중입니다.")
+                                                          .timestamp(LocalDateTime.now())
+                                                          .serverInfo("WedSnap Server v1.0")
+                                                          .build();
 
         return ResponseEntity.ok(response);
     }
