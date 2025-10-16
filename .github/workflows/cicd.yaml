@@ -150,6 +150,7 @@ jobs:
             elif [ "${BUILD_ENV}" = "dev" ]; then
               VOLUME_PATH="docker/wedsnap-dev"
             fi
+            echo "VOLUME_PATH=${VOLUME_PATH}"
             docker run -d \
               --name ${CONTAINER_NAME} \
               --restart=unless-stopped \
