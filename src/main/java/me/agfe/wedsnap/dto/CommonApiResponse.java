@@ -1,7 +1,5 @@
 package me.agfe.wedsnap.dto;
 
-import org.springframework.web.ErrorResponse;
-
 import lombok.Builder;
 import lombok.Getter;
 
