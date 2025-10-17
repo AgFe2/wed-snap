@@ -1,7 +1,5 @@
 package me.agfe.wedsnap.dto;
 
-import org.springframework.http.HttpStatus;
-
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,5 +11,4 @@ public class ErrorResponse {
     private String title;
     private String message;
     private String detail;
-    private HttpStatus httpStatus;
 }

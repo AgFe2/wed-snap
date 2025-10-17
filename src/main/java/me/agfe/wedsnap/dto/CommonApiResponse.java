@@ -1,10 +1,13 @@
 package me.agfe.wedsnap.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommonApiResponse<T> {
 
     public static <T> CommonApiResponse<T> error(ErrorResponse error) {
@@ -20,6 +23,7 @@ public class CommonApiResponse<T> {
                                 .data(data)
                                 .build();
     }
+
     private boolean result;
     private T data;
     private ErrorResponse error;

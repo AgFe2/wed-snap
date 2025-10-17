@@ -4,7 +4,7 @@
   <property name="APPLICATION_NAME" value="wedsnap" />
   <property name="LOG_PATH" value="C:/temp/wedsnap-local/logs" />
 
-  <timestamp key="timestamp" datePattern="yyyy-MM-dd HH:mm:ss.SSS"/>
+  <timestamp key="timestamp" datePattern="yyyy-MM-dd HH:mm:ss.SSS" />
 
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
@@ -23,8 +23,8 @@
   </appender>
 
   <root level="DEBUG">
-    <appender-ref ref="CONSOLE"/>
-    <appender-ref ref="FILE"/>
+    <appender-ref ref="CONSOLE" />
+    <appender-ref ref="FILE" />
   </root>
 
 </configuration>
