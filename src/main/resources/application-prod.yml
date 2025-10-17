@@ -9,5 +9,4 @@ wedsnap:
     base-path: "/nas/wedsnap"
 
 logging:
-  file:
-    name: /var/log/wedsnap/wedsnap-prod.log
+  config: classpath:logback-prod.xml

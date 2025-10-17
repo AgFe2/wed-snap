@@ -9,5 +9,4 @@ wedsnap:
     base-path: "C:/temp/wedsnap"
 
 logging:
-  file:
-    name: logs/wedsnap-local.log
+  config: classpath:logback-local.xml
