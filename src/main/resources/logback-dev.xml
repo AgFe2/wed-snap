@@ -18,7 +18,7 @@
       <pattern>${timestamp} [%thread] %-5level ${APPLICATION_NAME} - %-40logger{39} - %msg%n%ex</pattern>
     </encoder>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>${LOG_PATH}/archive/${APPLICATION_NAME}-dev-%d{yyyy-MM}.log</fileNamePattern>
+      <fileNamePattern>${LOG_PATH}/archive/${APPLICATION_NAME}-dev-%d{yyyy-ww}.log</fileNamePattern>
     </rollingPolicy>
   </appender>
 
