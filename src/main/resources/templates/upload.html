@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>WedSnap - 함께한 순간을 남겨주세요</title>
-  <link rel="stylesheet" th:href="@{/css/upload.css}">
+  <link rel="stylesheet" th:href="@{/css/upload.css(v=${appVersion})}">
   <link href="/images/wedsnap-icon.png" rel="icon" type="image/png">
 </head>
 <body>
@@ -89,6 +89,6 @@
   </div>
 </div>
 
-<script th:src="@{/js/upload.js}"></script>
+<script th:src="@{/js/upload.js(v=${appVersion})}"></script>
 </body>
 </html>
