@@ -15,3 +15,9 @@ logging:
   level:
     root: INFO
     me.agfe.wedsnap: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info

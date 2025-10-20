@@ -102,7 +102,7 @@ jobs:
     needs: [ set-environment, ci ]
     if: github.ref_name == 'main' || github.ref_name == 'dev'
     steps:
-      - name: Deploy to Synology NAS
+      - name: Deploy to Synology NAS (Blue-Green)
         uses: appleboy/ssh-action@v1.0.3
         env:
           BUILD_ENV: ${{ needs.set-environment.outputs.build_env }}
@@ -112,7 +112,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            echo "🛰️  배포 시작..."
+            echo "🛰️  Blue-Green 무중단 배포 시작..."
             BUILD_ENV="${{ needs.set-environment.outputs.build_env }}"
             echo "📦 Docker 이미지 태그: ${BUILD_ENV}"
 
@@ -121,53 +121,144 @@ jobs:
               CONTAINER_NAME="wedsnap-prod"
               HOST_PORT="8080"
               DOMAIN="wedsnap.agfe2.synology.me"
+              VOLUME_PATH="/volume1/docker/wedsnap"
             elif [ "${BUILD_ENV}" = "dev" ]; then
               CONTAINER_NAME="wedsnap-dev"
               HOST_PORT="8081"
               DOMAIN="wedsnap-dev.agfe2.synology.me"
+              VOLUME_PATH="/volume1/docker/wedsnap-dev"
             fi
 
             echo "🔧 환경: ${BUILD_ENV}"
-            echo "📦 컨테이너: ${CONTAINER_NAME}"
             echo "🔌 포트: ${HOST_PORT}:8080"
             echo "🌐 도메인: https://${DOMAIN}"
+            echo "💾 볼륨: ${VOLUME_PATH}"
 
             export PATH=$PATH:/usr/local/bin
+
+            # Blue-Green 배포: 현재 실행 중인 컨테이너 색상 확인
+            CURRENT_CONTAINER=$(docker ps --filter "name=${CONTAINER_NAME}" --format "{{.Names}}" 2>/dev/null | grep -E "${CONTAINER_NAME}-(blue|green)" | head -1)
+
+            if [[ "$CURRENT_CONTAINER" == *"-blue" ]]; then
+              NEW_COLOR="green"
+              OLD_COLOR="blue"
+              echo "🔵 현재 Blue 실행 중 → Green으로 전환"
+            else
+              NEW_COLOR="blue"
+              OLD_COLOR="green"
+              echo "🟢 현재 Green 실행 중 (또는 없음) → Blue로 전환"
+            fi
+
+            NEW_CONTAINER_NAME="${CONTAINER_NAME}-${NEW_COLOR}"
+            OLD_CONTAINER_NAME="${CONTAINER_NAME}-${OLD_COLOR}"
+            TEMP_PORT=$((HOST_PORT+100))
+
+            echo "📦 새 컨테이너: ${NEW_CONTAINER_NAME}"
+            echo "🗑️  기존 컨테이너: ${OLD_CONTAINER_NAME}"
 
             # 최신 이미지 Pull
             echo "📥 이미지 다운로드 중..."
             docker pull ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${BUILD_ENV}
 
-            # 기존 컨테이너 중지 및 삭제
-            echo "🛑 기존 컨테이너 정리 중..."
-            docker stop ${CONTAINER_NAME} 2>/dev/null || true
-            docker rm ${CONTAINER_NAME} 2>/dev/null || true
+            # 기존 같은 이름의 컨테이너 정리 (중복 방지)
+            docker rm -f ${NEW_CONTAINER_NAME} 2>/dev/null || true
 
-            # 새 컨테이너 시작
-            echo "🚀 새 컨테이너 시작 중..."
-            if [ "${BUILD_ENV}" = "prod" ]; then
-              VOLUME_PATH="/volume1/docker/wedsnap"
-            elif [ "${BUILD_ENV}" = "dev" ]; then
-              VOLUME_PATH="/volume1/docker/wedsnap-dev"
-            fi
-            echo "VOLUME_PATH=${VOLUME_PATH}"
+            # 새 컨테이너 시작 (임시 포트로)
+            echo "🚀 새 컨테이너 시작 중 (임시 포트: ${TEMP_PORT})..."
             docker run -d \
-              --name ${CONTAINER_NAME} \
-              --restart=unless-stopped \
+              --name ${NEW_CONTAINER_NAME} \
+              -p ${TEMP_PORT}:8080 \
+              -v ${VOLUME_PATH}:/nas/wedsnap \
+              -e "SPRING_PROFILES_ACTIVE=${BUILD_ENV}" \
+              ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${BUILD_ENV}
+
+            # 헬스체크 (실제 HTTP 요청으로 검증)
+            echo "🏥 헬스체크 시작"
+            HEALTH_CHECK_PASSED=false
+
+            for i in {1..10}; do
+              echo "  시도 ${i}/10..."
+
+              # Spring Boot Actuator health 엔드포인트 확인
+              if curl -f -s http://localhost:${TEMP_PORT}/actuator/health > /dev/null 2>&1; then
+                echo "✅ 헬스체크 성공: 애플리케이션이 정상적으로 응답합니다"
+                HEALTH_CHECK_PASSED=true
+                break
+              fi
+
+              # 컨테이너가 중지되었는지 확인
+              if ! docker ps | grep -q ${NEW_CONTAINER_NAME}; then
+                echo "❌ 컨테이너가 실행 중이 아닙니다"
+                break
+              fi
+
+              sleep 3
+            done
+
+            # 헬스체크 실패 시 롤백
+            if [ "$HEALTH_CHECK_PASSED" != "true" ]; then
+              echo "❌ 헬스체크 실패: 배포를 롤백합니다"
+              echo "📋 컨테이너 로그:"
+              docker logs --tail 50 ${NEW_CONTAINER_NAME}
+
+              echo "🔄 새 컨테이너 정리 중..."
+              docker stop ${NEW_CONTAINER_NAME} 2>/dev/null || true
+              docker rm ${NEW_CONTAINER_NAME} 2>/dev/null || true
+
+              echo "⚠️  기존 컨테이너(${OLD_CONTAINER_NAME})는 그대로 유지됩니다"
+              exit 1
+            fi
+
+            # 트래픽 전환: 기존 컨테이너 중지
+            echo "🔄 트래픽 전환 중..."
+            if docker ps | grep -q ${OLD_CONTAINER_NAME}; then
+              echo "🛑 기존 컨테이너(${OLD_COLOR}) 중지 중..."
+              docker stop -t 30 ${OLD_CONTAINER_NAME} 2>/dev/null || true
+            fi
+
+            # 새 컨테이너를 실제 포트로 재시작
+            echo "🔌 새 컨테이너를 실제 포트(${HOST_PORT})로 재시작 중..."
+            docker stop ${NEW_CONTAINER_NAME}
+            docker rm ${NEW_CONTAINER_NAME}
+
+            docker run -d \
+              --name ${NEW_CONTAINER_NAME} \
               -p ${HOST_PORT}:8080 \
               -v ${VOLUME_PATH}:/nas/wedsnap \
               -e "SPRING_PROFILES_ACTIVE=${BUILD_ENV}" \
               ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${BUILD_ENV}
 
-            # 컨테이너 상태 확인
+            # 최종 헬스체크
+            echo "🏥 최종 헬스체크 중..."
             sleep 3
-            if docker ps | grep -q ${CONTAINER_NAME}; then
-              echo "✅ 배포 완료!"
-              echo "✅ 컨테이너: ${CONTAINER_NAME}"
+
+            if curl -f -s http://localhost:${HOST_PORT}/actuator/health > /dev/null 2>&1; then
+              echo "✅ 최종 헬스체크 성공"
+
+              # 기존 컨테이너 정리
+              if docker ps -a | grep -q ${OLD_CONTAINER_NAME}; then
+                echo "🗑️  기존 컨테이너(${OLD_COLOR}) 삭제 중..."
+                docker rm ${OLD_CONTAINER_NAME} 2>/dev/null || true
+              fi
+
+              echo "✅ Blue-Green 배포 완료!"
               echo "✅ 접속 URL: https://${DOMAIN}"
+              echo "🎨 활성 컨테이너: ${NEW_COLOR} (${NEW_CONTAINER_NAME})"
             else
-              echo "❌ 배포 실패: 컨테이너가 실행되지 않았습니다."
-              docker logs ${CONTAINER_NAME}
+              echo "❌ 최종 헬스체크 실패: 긴급 롤백 시도"
+
+              # 긴급 롤백: 새 컨테이너 중지하고 기존 컨테이너 재시작
+              docker stop ${NEW_CONTAINER_NAME} 2>/dev/null || true
+              docker rm ${NEW_CONTAINER_NAME} 2>/dev/null || true
+
+              if docker ps -a | grep -q ${OLD_CONTAINER_NAME}; then
+                echo "🔄 기존 컨테이너(${OLD_COLOR}) 재시작 중..."
+                docker start ${OLD_CONTAINER_NAME}
+                echo "⚠️  롤백 완료: 기존 버전으로 복구되었습니다"
+              else
+                echo "❌ 롤백 실패: 기존 컨테이너를 찾을 수 없습니다"
+              fi
+
               exit 1
             fi
 
