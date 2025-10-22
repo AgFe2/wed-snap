@@ -2,7 +2,9 @@ package me.agfe.wedsnap.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,13 +33,18 @@ public class UploadController {
 
     private final UploadService uploadService;
 
+    @Value("${app.base-url}")
+    private String baseUrl;
+
     /**
      * 메인 업로드 페이지
+     * @param model 뷰에 전달할 모델
      * @return upload.html 템플릿
      */
     @GetMapping("/")
-    public String uploadPage() {
+    public String uploadPage(Model model) {
         log.info("Upload page requested");
+        model.addAttribute("baseUrl", baseUrl);
         return "upload";
     }
 
