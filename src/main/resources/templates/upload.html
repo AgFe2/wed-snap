@@ -8,7 +8,7 @@
   <meta content="no-cache" http-equiv="Pragma">
   <meta content="0" http-equiv="Expires">
   <title>WedSnap - 함께한 순간을 남겨주세요</title>
-  <link rel="stylesheet" th:href="@{/css/upload.css(v=${T(System).currentTimeMillis()})}">
+  <link rel="stylesheet" th:href="@{/css/upload.css(v=${#dates.createNow().time})}">
   <link href="/images/wedsnap-icon.png" rel="icon" type="image/png">
 </head>
 <body>
@@ -104,6 +104,6 @@
   </div>
 </div>
 
-<script th:src="@{/js/upload.js(v=${T(System).currentTimeMillis()})}"></script>
+<script th:src="@{/js/upload.js(v=${#dates.createNow().time})}"></script>
 </body>
 </html>
