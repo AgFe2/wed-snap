@@ -111,7 +111,6 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          debug: true
           script: |
             echo "🛰️  배포 시작..."
             BUILD_ENV="${{ needs.set-environment.outputs.build_env }}"
