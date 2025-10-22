@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <!-- 캐시 방지 설정 -->
+  <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control">
+  <meta content="no-cache" http-equiv="Pragma">
+  <meta content="0" http-equiv="Expires">
   <title>WedSnap - 함께한 순간을 남겨주세요</title>
-  <link rel="stylesheet" th:href="@{/css/upload.css(v=${appVersion})}">
+  <link rel="stylesheet" th:href="@{/css/upload.css(v=${#dates.createNow().time})}">
   <link href="/images/wedsnap-icon.png" rel="icon" type="image/png">
 </head>
 <body>
@@ -100,6 +104,6 @@
   </div>
 </div>
 
-<script th:src="@{/js/upload.js(v=${appVersion})}"></script>
+<script th:src="@{/js/upload.js(v=${#dates.createNow().time})}"></script>
 </body>
 </html>
