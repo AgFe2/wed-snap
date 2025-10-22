@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <!-- 캐시 방지 설정 -->
+  <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control">
+  <meta content="no-cache" http-equiv="Pragma">
+  <meta content="0" http-equiv="Expires">
   <title>WedSnap - 함께한 순간을 남겨주세요</title>
-  <link rel="stylesheet" th:href="@{/css/upload.css}">
+  <link rel="stylesheet" th:href="@{/css/upload.css(v=${#dates.createNow().time})}">
   <link href="/images/wedsnap-icon.png" rel="icon" type="image/png">
 </head>
 <body>
@@ -33,6 +37,7 @@
         placeholder="이름을 입력해주세요"
         required
         type="text">
+      <p class="validation-error" id="userNameError" style="display: none;"></p>
     </div>
 
     <!-- 파일 선택 버튼 -->
@@ -84,11 +89,21 @@
   <div class="modal-content">
     <div class="modal-icon">🎉</div>
     <h2 class="modal-title">업로드 완료!</h2>
-    <p class="modal-message">소중한 순간을 공유해 주셔서 감사합니다</p>
+    <p class="modal-message" id="successMessage">소중한 순간을 공유해 주셔서 감사합니다</p>
     <button class="modal-btn" id="closeModalBtn" type="button">확인</button>
   </div>
 </div>
 
-<script th:src="@{/js/upload.js}"></script>
+<!-- 에러 모달 -->
+<div class="modal" id="errorModal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-icon">❌</div>
+    <h2 class="modal-title">업로드 실패</h2>
+    <p class="modal-message" id="errorMessage"></p>
+    <button class="modal-btn" id="closeErrorModalBtn" type="button">확인</button>
+  </div>
+</div>
+
+<script th:src="@{/js/upload.js(v=${#dates.createNow().time})}"></script>
 </body>
 </html>
