@@ -1,0 +1,15 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+wedsnap:
+  environment: dev
+  upload:
+    base-path: "/nas/wedsnap-dev"
+
+logging:
+  config: classpath:logback-dev.xml
+
+app:
+  base-url: https://wedsnap-dev.agfe2.synology.me

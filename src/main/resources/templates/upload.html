@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <!-- 캐시 방지 설정 -->
+  <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control">
+  <meta content="no-cache" http-equiv="Pragma">
+  <meta content="0" http-equiv="Expires">
+  
+  <!-- Open Graph / Facebook / KakaoTalk -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" th:content="${baseUrl} + '/'">
+  <meta property="og:title" content="WedSnap - 함께한 순간을 남겨주세요">
+  <meta property="og:description" content="소중한 추억을 공유해 주세요. 여러분의 시선으로 담아주신 순간들이 모여 우리의 특별한 날을 더욱 빛나게 합니다.">
+  <meta property="og:image" th:content="${baseUrl} + '/images/og-image.png'">
+  <meta property="og:site_name" content="WedSnap">
+  <meta property="og:locale" content="ko_KR">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" th:content="${baseUrl} + '/'">
+  <meta name="twitter:title" content="WedSnap - 함께한 순간을 남겨주세요">
+  <meta name="twitter:description" content="소중한 추억을 공유해 주세요. 여러분의 시선으로 담아주신 순간들이 모여 우리의 특별한 날을 더욱 빛나게 합니다.">
+  <meta name="twitter:image" th:content="${baseUrl} + '/images/og-image.png'">
+  
+  <!-- 기본 메타 태그 -->
+  <meta name="description" content="소중한 추억을 공유해 주세요. 여러분의 시선으로 담아주신 순간들이 모여 우리의 특별한 날을 더욱 빛나게 합니다.">
+  <meta name="keywords" content="웨딩, 결혼식, 사진 공유, WedSnap, 결혼식 사진">
+  
+  <title>WedSnap - 함께한 순간을 남겨주세요</title>
+  <link rel="stylesheet" th:href="@{/css/upload.css(v=${#dates.createNow().time})}">
+  <link href="/images/wedsnap-icon.png" rel="icon" type="image/png">
+</head>
+<body>
+<div class="container">
+  <!-- 헤더 섹션 -->
+  <header class="header">
+    <h1 class="title">우리의 시간,<br />당신의 시선으로 빛나다.</h1>
+    <p class="subtitle">소중한 추억을 공유해 주셔서 감사합니다</p>
+  </header>
+
+  <!-- 메인 카드 -->
+  <div class="upload-card">
+    <!-- 설명 문구 -->
+    <div class="description">
+      <p>여러분의 시선으로 담아주신 순간들이 모여</p>
+      <p>우리의 특별한 날을 더욱 빛나게 합니다 ✨</p>
+    </div>
+
+    <!-- 이름 입력 -->
+    <div class="form-group">
+      <label class="label" for="userName">이름</label>
+      <input
+        class="input-field"
+        id="userName"
+        maxlength="20"
+        placeholder="이름을 입력해주세요"
+        required
+        type="text">
+      <p class="validation-error" id="userNameError" style="display: none;"></p>
+    </div>
+
+    <!-- 파일 선택 버튼 -->
+    <div class="form-group">
+      <label class="label" for="fileInput">사진 선택</label>
+      <input
+        accept="image/*"
+        class="file-input"
+        id="fileInput"
+        multiple
+        style="display: none;"
+        type="file">
+      <button class="select-btn" id="selectBtn" type="button">
+        📷 사진 선택하기
+      </button>
+      <p class="file-hint">최대 20장까지 선택 가능합니다<br />10MB 이하의 사진만 업로드 가능합니다</p>
+    </div>
+
+    <!-- 썸네일 미리보기 영역 -->
+    <div class="preview-area" id="previewArea" style="display: none;">
+      <div class="preview-header">
+        <h3 class="preview-title">선택한 사진 (<span id="photoCount">0</span>장)</h3>
+      </div>
+      <div class="thumbnail-grid" id="thumbnailGrid"></div>
+    </div>
+
+    <!-- 업로드 버튼 -->
+    <button class="upload-btn" disabled id="uploadBtn" type="button">
+      💕 사진 업로드하기
+    </button>
+
+    <!-- 진행률 표시 -->
+    <div class="progress-section" id="progressSection" style="display: none;">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <p class="progress-text" id="progressText">업로드 중... 0%</p>
+    </div>
+  </div>
+
+  <!-- 프라이버시 안내 -->
+  <footer class="footer">
+    <p>🤍 사진은 비공개로 안전하게 보관됩니다</p>
+  </footer>
+</div>
+
+<!-- 성공 모달 -->
+<div class="modal" id="successModal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-icon">🎉</div>
+    <h2 class="modal-title">업로드 완료!</h2>
+    <p class="modal-message" id="successMessage">소중한 순간을 공유해 주셔서 감사합니다</p>
+    <button class="modal-btn" id="closeModalBtn" type="button">확인</button>
+  </div>
+</div>
+
+<!-- 에러 모달 -->
+<div class="modal" id="errorModal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-icon">❌</div>
+    <h2 class="modal-title">업로드 실패</h2>
+    <p class="modal-message" id="errorMessage"></p>
+    <button class="modal-btn" id="closeErrorModalBtn" type="button">확인</button>
+  </div>
+</div>
+
+<script th:src="@{/js/upload.js(v=${#dates.createNow().time})}"></script>
+</body>
+</html>

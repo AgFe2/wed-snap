@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <property name="APPLICATION_NAME" value="wedsnap" />
+  <property name="LOG_PATH" value="/nas/wedsnap-dev/logs" />
+
+  <timestamp key="timestamp" datePattern="yyyy-MM-dd HH:mm:ss.SSS" />
+
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>${timestamp} [%thread] %-5level ${APPLICATION_NAME} - %-40logger{39} - %msg%n%ex</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/${APPLICATION_NAME}-dev.log</file>
+    <encoder>
+      <pattern>${timestamp} [%thread] %-5level ${APPLICATION_NAME} - %-40logger{39} - %msg%n%ex</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/archive/${APPLICATION_NAME}-dev-%d{yyyy-ww}.log</fileNamePattern>
+    </rollingPolicy>
+  </appender>
+
+  <root level="DEBUG">
+    <appender-ref ref="CONSOLE" />
+    <appender-ref ref="FILE" />
+  </root>
+
+</configuration>

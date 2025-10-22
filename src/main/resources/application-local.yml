@@ -1,0 +1,15 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+
+wedsnap:
+  environment: local
+  upload:
+    base-path: "C:/temp/wedsnap"
+
+logging:
+  config: classpath:logback-local.xml
+
+app:
+  base-url: http://localhost:8080
