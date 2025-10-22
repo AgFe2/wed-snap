@@ -2,7 +2,7 @@
 <configuration>
 
   <property name="APPLICATION_NAME" value="wedsnap" />
-  <property name="LOG_PATH" value="/volume1/docker/wedsnap-dev/logs" />
+  <property name="LOG_PATH" value="/nas/wedsnap-dev/logs" />
 
   <timestamp key="timestamp" datePattern="yyyy-MM-dd HH:mm:ss.SSS" />
 
