@@ -7,6 +7,27 @@
   <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control">
   <meta content="no-cache" http-equiv="Pragma">
   <meta content="0" http-equiv="Expires">
+  
+  <!-- Open Graph / Facebook / KakaoTalk -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" th:content="${baseUrl} + '/'">
+  <meta property="og:title" content="WedSnap - 함께한 순간을 남겨주세요">
+  <meta property="og:description" content="소중한 추억을 공유해 주세요. 여러분의 시선으로 담아주신 순간들이 모여 우리의 특별한 날을 더욱 빛나게 합니다.">
+  <meta property="og:image" th:content="${baseUrl} + '/images/og-image.png'">
+  <meta property="og:site_name" content="WedSnap">
+  <meta property="og:locale" content="ko_KR">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" th:content="${baseUrl} + '/'">
+  <meta name="twitter:title" content="WedSnap - 함께한 순간을 남겨주세요">
+  <meta name="twitter:description" content="소중한 추억을 공유해 주세요. 여러분의 시선으로 담아주신 순간들이 모여 우리의 특별한 날을 더욱 빛나게 합니다.">
+  <meta name="twitter:image" th:content="${baseUrl} + '/images/og-image.png'">
+  
+  <!-- 기본 메타 태그 -->
+  <meta name="description" content="소중한 추억을 공유해 주세요. 여러분의 시선으로 담아주신 순간들이 모여 우리의 특별한 날을 더욱 빛나게 합니다.">
+  <meta name="keywords" content="웨딩, 결혼식, 사진 공유, WedSnap, 결혼식 사진">
+  
   <title>WedSnap - 함께한 순간을 남겨주세요</title>
   <link rel="stylesheet" th:href="@{/css/upload.css(v=${#dates.createNow().time})}">
   <link href="/images/wedsnap-icon.png" rel="icon" type="image/png">

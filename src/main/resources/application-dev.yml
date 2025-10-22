@@ -10,3 +10,6 @@ wedsnap:
 
 logging:
   config: classpath:logback-dev.xml
+
+app:
+  base-url: https://wedsnap-dev.agfe2.synology.me

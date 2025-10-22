@@ -10,3 +10,6 @@ wedsnap:
 
 logging:
   config: classpath:logback-local.xml
+
+app:
+  base-url: http://localhost:8080
