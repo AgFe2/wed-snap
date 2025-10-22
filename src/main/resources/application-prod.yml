@@ -6,7 +6,7 @@ spring:
 wedsnap:
   environment: prod
   upload:
-    base-path: "/nas/wedsnap"
+    base-path: "${APP_BASE_PATH:/nas/wedsnap-prod}"
 
 logging:
   config: classpath:logback-prod.xml
