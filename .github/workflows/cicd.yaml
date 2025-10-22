@@ -103,7 +103,7 @@ jobs:
     if: github.ref_name == 'main' || github.ref_name == 'dev'
     steps:
       - name: Deploy to Synology NAS
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@master
         env:
           BUILD_ENV: ${{ needs.set-environment.outputs.build_env }}
         with:
