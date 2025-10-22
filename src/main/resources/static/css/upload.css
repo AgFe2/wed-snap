@@ -122,6 +122,20 @@ body {
   opacity: 0.6;
 }
 
+/* 입력 필드 에러 스타일 */
+.input-field.input-error {
+  border-color: #FF6B6B;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.15);
+}
+
+/* Validation 에러 메시지 */
+.validation-error {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #FF6B6B;
+  text-align: left;
+}
+
 /* 선택 버튼 */
 .select-btn {
   width: 100%;

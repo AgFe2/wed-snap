@@ -37,6 +37,7 @@
         placeholder="이름을 입력해주세요"
         required
         type="text">
+      <p class="validation-error" id="userNameError" style="display: none;"></p>
     </div>
 
     <!-- 파일 선택 버튼 -->
@@ -88,8 +89,18 @@
   <div class="modal-content">
     <div class="modal-icon">🎉</div>
     <h2 class="modal-title">업로드 완료!</h2>
-    <p class="modal-message">소중한 순간을 공유해 주셔서 감사합니다</p>
+    <p class="modal-message" id="successMessage">소중한 순간을 공유해 주셔서 감사합니다</p>
     <button class="modal-btn" id="closeModalBtn" type="button">확인</button>
+  </div>
+</div>
+
+<!-- 에러 모달 -->
+<div class="modal" id="errorModal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-icon">❌</div>
+    <h2 class="modal-title">업로드 실패</h2>
+    <p class="modal-message" id="errorMessage"></p>
+    <button class="modal-btn" id="closeErrorModalBtn" type="button">확인</button>
   </div>
 </div>
 

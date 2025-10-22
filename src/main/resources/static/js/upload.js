@@ -10,6 +10,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'ima
 const fileInput = document.getElementById('fileInput');
 const selectBtn = document.getElementById('selectBtn');
 const userNameInput = document.getElementById('userName');
+const userNameError = document.getElementById('userNameError');
 const previewArea = document.getElementById('previewArea');
 const thumbnailGrid = document.getElementById('thumbnailGrid');
 const photoCount = document.getElementById('photoCount');
@@ -18,7 +19,11 @@ const progressSection = document.getElementById('progressSection');
 const progressFill = document.getElementById('progressFill');
 const progressText = document.getElementById('progressText');
 const successModal = document.getElementById('successModal');
+const successMessage = document.getElementById('successMessage');
 const closeModalBtn = document.getElementById('closeModalBtn');
+const errorModal = document.getElementById('errorModal');
+const errorMessage = document.getElementById('errorMessage');
+const closeErrorModalBtn = document.getElementById('closeErrorModalBtn');
 
 // ========================================
 // 이벤트 리스너 등록
@@ -26,14 +31,76 @@ const closeModalBtn = document.getElementById('closeModalBtn');
 document.addEventListener('DOMContentLoaded', () => {
   selectBtn.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', handleFileSelect);
-  userNameInput.addEventListener('input', updateUploadButtonState);
+  userNameInput.addEventListener('blur', () => validateUserName());
+  userNameInput.addEventListener('input', () => {
+    // 입력 중 에러가 있었다면 실시간 재검증
+    if (userNameError.style.display !== 'none') {
+      validateUserName();
+    }
+    updateUploadButtonState();
+  });
   uploadBtn.addEventListener('click', handleUpload);
   closeModalBtn.addEventListener('click', closeModal);
+  closeErrorModalBtn.addEventListener('click', closeErrorModal);
 });
 
 // ========================================
 // 유틸리티 함수
 // ========================================
+
+/**
+ * 사용자 이름 검증
+ */
+function validateUserName() {
+  const userName = userNameInput.value.trim();
+  const regex = /^[가-힣a-zA-Z0-9]{2,20}$/;
+
+  // 빈 값
+  if (!userName) {
+    showUserNameError('이름을 입력해주세요');
+    return false;
+  }
+
+  // 2자 미만
+  if (userName.length < 2) {
+    showUserNameError('이름은 2자 이상이어야 합니다');
+    return false;
+  }
+
+  // 20자 초과
+  if (userName.length > 20) {
+    showUserNameError('이름은 20자를 초과할 수 없습니다');
+    return false;
+  }
+
+  // 특수문자/공백 포함 여부
+  if (!regex.test(userName)) {
+    showUserNameError('이름에는 특수문자나 공백을 포함할 수 없습니다');
+    return false;
+  }
+
+  // 검증 통과
+  hideUserNameError();
+  return true;
+}
+
+/**
+ * 사용자 이름 에러 표시
+ */
+function showUserNameError(message) {
+  userNameInput.classList.add('input-error');
+  userNameError.textContent = message;
+  userNameError.style.display = 'block';
+}
+
+/**
+ * 사용자 이름 에러 숨김
+ */
+function hideUserNameError() {
+  userNameInput.classList.remove('input-error');
+  userNameError.textContent = '';
+  userNameError.style.display = 'none';
+}
 
 /**
  * 파일 크기 검증
@@ -249,10 +316,10 @@ function removeThumbnail(index) {
  * 업로드 버튼 상태 업데이트
  */
 function updateUploadButtonState() {
-  const userName = userNameInput.value.trim();
   const hasFiles = selectedFiles.length > 0;
+  const isValidUserName = validateUserName();
 
-  uploadBtn.disabled = !(userName && hasFiles);
+  uploadBtn.disabled = !(isValidUserName && hasFiles);
 }
 
 /**
@@ -296,29 +363,58 @@ async function handleUpload() {
     // 업로드 완료 핸들러
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        const result = JSON.parse(xhr.responseText);
-        // TODO: 백엔드 응답 데이터 활용 (예: 업로드된 파일 수, 저장 경로 등)
-        showSuccess();
-      } else {
-        // 에러 응답 처리
-        let errorMessage = '업로드에 실패했습니다.';
-
         try {
-          // TODO: 백엔드 에러 응답(CommonApiResponse)에서 구체적인 에러 메시지 파싱 및 표시 구현 필요
-          const errorResponse = JSON.parse(xhr.responseText);
-          // errorMessage = errorResponse.message || errorMessage;
-        } catch (e) {
-          // JSON 파싱 실패 시 기본 에러 메시지 사용
-        }
+          const response = JSON.parse(xhr.responseText);
 
-        showToast('업로드 중 오류가 발생했습니다.\n' + errorMessage, 4000);
+          // 성공 응답 (result === true)
+          if (response.result === true) {
+            const data = response.data || {};
+            const successCount = data.successCount || selectedFiles.length;
+            const failCount = data.failCount || 0;
+            const failedFiles = data.failedFiles || [];
+
+            // 실패한 파일 제외하고 성공한 파일만 제거
+            if (failedFiles.length > 0) {
+              selectedFiles = selectedFiles.filter(file =>
+                failedFiles.includes(file.name)
+              );
+              updatePreviewArea();
+            } else {
+              selectedFiles = [];
+            }
+
+            showSuccess(successCount, failCount);
+          }
+          // 에러 응답 (result === false)
+          else {
+            const error = response.error || {};
+            const errorMsg = error.detail || '업로드에 실패했습니다.';
+            showErrorModal(errorMsg);
+            resetUploadState();
+          }
+        } catch (e) {
+          // JSON 파싱 실패
+          showErrorModal('응답 처리 중 오류가 발생했습니다.');
+          resetUploadState();
+        }
+      } else {
+        // HTTP 에러 (4xx, 5xx)
+        let errorMsg = '업로드에 실패했습니다.';
+        try {
+          const response = JSON.parse(xhr.responseText);
+          const error = response.error || {};
+          errorMsg = error.detail || errorMsg;
+        } catch (e) {
+          // JSON 파싱 실패 시 기본 메시지 사용
+        }
+        showErrorModal(errorMsg);
         resetUploadState();
       }
     };
 
     // 네트워크 에러 핸들러
     xhr.onerror = () => {
-      showToast('업로드 중 네트워크 오류가 발생했습니다.', 4000);
+      showErrorModal('네트워크 오류가 발생했습니다.\n연결 상태를 확인해주세요.');
       resetUploadState();
     };
 
@@ -343,17 +439,44 @@ function updateProgress(percentage) {
 /**
  * 성공 모달 표시
  */
-function showSuccess() {
+function showSuccess(successCount, failCount) {
   progressSection.style.display = 'none';
+
+  // 메시지 업데이트
+  let message = '소중한 순간을 공유해 주셔서 감사합니다';
+  if (failCount > 0) {
+    message += `<br><small style="font-size: 0.85em; color: var(--text-secondary);">(성공: ${successCount}장, 실패: ${failCount}장)</small>`;
+  } else {
+    message += `<br><small style="font-size: 0.85em; color: var(--text-secondary);">(성공: ${successCount}장)</small>`;
+  }
+
+  successMessage.innerHTML = message;
   successModal.style.display = 'flex';
 }
 
 /**
- * 모달 닫기
+ * 성공 모달 닫기
  */
 function closeModal() {
   successModal.style.display = 'none';
   resetUploadState();
+}
+
+/**
+ * 에러 모달 표시
+ */
+function showErrorModal(message) {
+  progressSection.style.display = 'none';
+  errorMessage.textContent = message;
+  errorModal.style.display = 'flex';
+}
+
+/**
+ * 에러 모달 닫기
+ */
+function closeErrorModal() {
+  errorModal.style.display = 'none';
+  // 에러 모달은 닫을 때 파일을 유지 (재시도 가능)
 }
 
 /**
