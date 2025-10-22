@@ -99,7 +99,7 @@ jobs:
 
   cd:
     runs-on: ubuntu-latest
-    needs: [set-environment, ci]
+    needs: [ set-environment, ci ]
     if: github.ref_name == 'main' || github.ref_name == 'dev'
     steps:
       - name: Deploy to Synology NAS
@@ -112,7 +112,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            echo "🛰️  배포 시작..."
+            echo "🚀 배포 시작..."
             BUILD_ENV="${{ needs.set-environment.outputs.build_env }}"
             echo "📦 Docker 이미지 태그: ${BUILD_ENV}"
 
@@ -121,44 +121,134 @@ jobs:
               CONTAINER_NAME="wedsnap-prod"
               HOST_PORT="8080"
               DOMAIN="wedsnap.agfe2.synology.me"
+              VOLUME_PATH="/volume1/docker/${CONTAINER_NAME}"
             elif [ "${BUILD_ENV}" = "dev" ]; then
               CONTAINER_NAME="wedsnap-dev"
               HOST_PORT="8081"
               DOMAIN="wedsnap-dev.agfe2.synology.me"
+              VOLUME_PATH="/volume1/docker/${CONTAINER_NAME}"
             fi
 
             echo "🔧 환경: ${BUILD_ENV}"
-            echo "📦 컨테이너: ${CONTAINER_NAME}"
             echo "🔌 포트: ${HOST_PORT}:8080"
             echo "🌐 도메인: https://${DOMAIN}"
+            echo "💾 볼륨: ${VOLUME_PATH}"
+            echo "⚠️  예상 다운타임: 10-30초"
 
             export PATH=$PATH:/usr/local/bin
 
+            IMAGE="${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${BUILD_ENV}"
+
             # 최신 이미지 Pull
             echo "📥 이미지 다운로드 중..."
-            docker pull ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${BUILD_ENV}
+            docker pull ${IMAGE}
 
-            # 기존 컨테이너 중지 및 삭제
-            echo "🛑 기존 컨테이너 정리 중..."
-            docker stop ${CONTAINER_NAME} 2>/dev/null || true
+            # 기존 컨테이너 정리
+            echo "🛑 기존 컨테이너 중지 중..."
+            docker stop -t 30 ${CONTAINER_NAME} 2>/dev/null || true
             docker rm ${CONTAINER_NAME} 2>/dev/null || true
 
             # 새 컨테이너 시작
             echo "🚀 새 컨테이너 시작 중..."
             docker run -d \
               --name ${CONTAINER_NAME} \
-              --restart=unless-stopped \
               -p ${HOST_PORT}:8080 \
-              ${{ secrets.DOCKER_REGISTRY_URL }}/wedsnap:${BUILD_ENV}
+              -v ${VOLUME_PATH}:/nas/${CONTAINER_NAME} \
+              -e "SPRING_PROFILES_ACTIVE=${BUILD_ENV}" \
+              -e APP_VERSION=1.0.1 \
+              ${IMAGE}
 
-            # 컨테이너 상태 확인
-            sleep 3
-            if docker ps | grep -q ${CONTAINER_NAME}; then
+            # 헬스체크
+            echo "🏥 헬스체크 시작... (20초 delay)"
+            sleep 20
+            HEALTH_CHECK_PASSED=false
+
+            for i in {1..10}; do
+              echo "  시도 ${i}/10..."
+
+              if curl -f -s http://localhost:${HOST_PORT}/actuator/health > /dev/null 2>&1; then
+                echo "✅ 헬스체크 성공: 애플리케이션이 정상적으로 응답합니다"
+                HEALTH_CHECK_PASSED=true
+                break
+              fi
+
+              if ! docker ps | grep -q ${CONTAINER_NAME}; then
+                echo "❌ 컨테이너가 실행 중이 아닙니다"
+                break
+              fi
+
+              sleep 3
+            done
+
+            # 헬스체크 결과 확인
+            if [ "$HEALTH_CHECK_PASSED" = "true" ]; then
               echo "✅ 배포 완료!"
-              echo "✅ 컨테이너: ${CONTAINER_NAME}"
               echo "✅ 접속 URL: https://${DOMAIN}"
+              echo "🎨 활성 컨테이너: ${CONTAINER_NAME}"
             else
-              echo "❌ 배포 실패: 컨테이너가 실행되지 않았습니다."
-              docker logs ${CONTAINER_NAME}
+              echo "❌ 헬스체크 실패: 배포에 실패했습니다"
+              echo "📋 컨테이너 로그:"
+              docker logs --tail 50 ${CONTAINER_NAME}
               exit 1
             fi
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [ ci, cd ]
+    if: always()  # 성공/실패 상관없이 항상 실행
+    steps:
+      - name: Send Slack notification (success or failure)
+        run: |
+          # Job 결과 가져오기
+          CI_RESULT="${{ needs.ci.result }}"
+          CD_RESULT="${{ needs.cd.result }}"
+
+          # 상태에 따라 메시지 결정
+          if [[ "$CI_RESULT" == "failure" || "$CD_RESULT" == "failure" ]]; then
+            STATUS="❌ 실패"
+            COLOR="#FF4C4C"
+          else
+            STATUS="✅ 성공"
+            COLOR="#36A64F"
+          fi
+
+          # 실패한 Job 표시
+          FAILED_JOBS=""
+          if [[ "$CI_RESULT" == "failure" ]]; then
+            FAILED_JOBS="${FAILED_JOBS} CI "
+          fi
+          if [[ "$CD_RESULT" == "failure" ]]; then
+            FAILED_JOBS="${FAILED_JOBS} CD "
+          fi
+
+          # Slack 메시지 본문
+          MESSAGE="{
+            \"attachments\": [
+              {
+                \"color\": \"${COLOR}\",
+                \"blocks\": [
+                  {
+                    \"type\": \"section\",
+                    \"text\": {
+                      \"type\": \"mrkdwn\",
+                      \"text\": \"*${STATUS} | GitHub Actions 알림*\n\n• Repository: *${{ github.repository }}*\n• Branch: *${{ github.ref_name }}*\n• 실행자: *${{ github.actor }}*\n• 실행 링크: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Run 보기>\"
+                    }
+                  },
+                  {
+                    \"type\": \"context\",
+                    \"elements\": [
+                      {
+                        \"type\": \"mrkdwn\",
+                        \"text\": \"실패한 Job: *${FAILED_JOBS:-없음}* | CI: ${CI_RESULT} / CD: ${CD_RESULT}\"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }"
+
+          echo "📤 Sending Slack message..."
+          curl -X POST -H 'Content-type: application/json' \
+            --data "${MESSAGE}" \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
