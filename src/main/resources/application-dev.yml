@@ -6,7 +6,7 @@ spring:
 wedsnap:
   environment: dev
   upload:
-    base-path: "/nas/wedsnap"
+    base-path: "/nas/wedsnap-dev"
 
 logging:
   config: classpath:logback-dev.xml
