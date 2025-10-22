@@ -25,7 +25,7 @@ import me.agfe.wedsnap.dto.UploadRequest;
 import me.agfe.wedsnap.dto.UploadResponse;
 import me.agfe.wedsnap.service.UploadService;
 
-@WebMvcTest(UploadRestController.class)
+@WebMvcTest(UploadController.class)
 @DisplayName("UploadRestController 테스트")
 class UploadRestControllerTest {
 
