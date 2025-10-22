@@ -48,7 +48,7 @@ public class UploadController {
      * @param files 업로드 파일들
      * @return 업로드 결과 응답
      */
-    @PostMapping(value = "/events/{eventName}/upload")
+    @PostMapping(value = "/api/events/{eventName}/upload")
     @ResponseBody
     public CommonApiResponse<UploadResponse> upload(
             @PathVariable String eventName,

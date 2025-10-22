@@ -27,7 +27,7 @@ import me.agfe.wedsnap.service.UploadService;
 
 @WebMvcTest(UploadController.class)
 @DisplayName("UploadRestController 테스트")
-class UploadRestControllerTest {
+class UploadControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
