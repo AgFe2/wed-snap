@@ -2,7 +2,8 @@
 <configuration>
 
   <property name="APPLICATION_NAME" value="wedsnap" />
-  <property name="LOG_PATH" value="/nas/wedsnap-dev/logs" />
+  <property name="APP_BASE_PATH" value="${APP_BASE_PATH:-/nas/wedsnap-dev}" />
+  <property name="LOG_PATH" value="${APP_BASE_PATH}/logs" />
 
   <timestamp key="timestamp" datePattern="yyyy-MM-dd HH:mm:ss.SSS" />
 
