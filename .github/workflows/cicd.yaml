@@ -159,7 +159,8 @@ jobs:
               ${IMAGE}
 
             # 헬스체크
-            echo "🏥 헬스체크 시작..."
+            echo "🏥 헬스체크 시작... (20초 delay)"
+            sleep 20
             HEALTH_CHECK_PASSED=false
 
             for i in {1..10}; do
