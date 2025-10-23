@@ -33,9 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
   fileInput.addEventListener('change', handleFileSelect);
   userNameInput.addEventListener('blur', () => validateUserName());
   userNameInput.addEventListener('input', () => {
-    // 20글자 초과 시 자동으로 잘라내기
-    if (userNameInput.value.length > 20) {
-      userNameInput.value = userNameInput.value.substring(0, 20);
+    let value = userNameInput.value;
+
+    // 실시간 공백 제거 (입력되었다가 지워짐)
+    const newValue = value.replace(/\s/g, '');
+    if (value !== newValue) {
+      userNameInput.value = newValue;
+      value = newValue;
+    }
+
+    // 20글자 초과 시 자동으로 잘라내기 (입력되었다가 지워짐)
+    if (value.length > 20) {
+      userNameInput.value = value.substring(0, 20);
     }
 
     // 입력 중 에러가 있었다면 실시간 재검증
@@ -231,6 +240,41 @@ function getErrorMessage(errorCode) {
       emoji: '⚠️',
       title: '요청 처리 실패',
       message: '요청을 처리할 수 없습니다.\n잠시 후 다시 시도해주세요.'
+    },
+    'EMPTY_FILE': {
+      emoji: '📄',
+      title: '빈 파일이에요',
+      message: '빈 파일은 업로드할 수 없습니다.\n유효한 사진을 선택해주세요.'
+    },
+    'INVALID_FILE_NAME': {
+      emoji: '📝',
+      title: '파일명이 잘못되었어요',
+      message: '파일 이름이 비어있거나 유효하지 않습니다.\n다른 파일을 선택해주세요.'
+    },
+    'INVALID_FILE_EXTENSION': {
+      emoji: '🖼️',
+      title: '허용되지 않은 파일 형식',
+      message: '허용되지 않은 파일 형식입니다.\nJPG, PNG, GIF, HEIC 형식의 사진만 업로드 가능합니다.'
+    },
+    'NO_FILES_PROVIDED': {
+      emoji: '📋',
+      title: '파일이 없어요',
+      message: '최소 1개의 파일을 업로드해야 합니다.\n사진을 선택해주세요.'
+    },
+    'ALL_FILES_EMPTY': {
+      emoji: '🗂️',
+      title: '모든 파일이 비어있어요',
+      message: '업로드된 모든 파일이 비어있습니다.\n유효한 파일을 선택해주세요.'
+    },
+    'INVALID_UPLOADER_NAME': {
+      emoji: '👤',
+      title: '이름이 잘못되었어요',
+      message: '업로더 이름이 유효하지 않습니다.\n2~20자의 한글, 영문, 숫자만 입력해주세요.'
+    },
+    'FILE_UPLOAD_FAILED': {
+      emoji: '❌',
+      title: '업로드 실패',
+      message: '파일 업로드 처리 중 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.'
     }
   };
 
@@ -441,17 +485,36 @@ async function handleUpload() {
             const failCount = data.failCount || 0;
             const failedFiles = data.failedFiles || [];
 
-            // 실패한 파일 제외하고 성공한 파일만 제거
-            if (failedFiles.length > 0) {
-              selectedFiles = selectedFiles.filter(file =>
-                failedFiles.includes(file.name)
+            // successCount와 failCount가 모두 0인 경우
+            if (successCount === 0 && failCount === 0) {
+              showErrorModal(
+                '📋 파일이 없어요',
+                '선택한 파일이 없습니다.\n사진을 선택한 후 다시 시도해주세요.'
               );
-              updatePreviewArea();
-            } else {
-              selectedFiles = [];
+              resetUploadState();
             }
+            // successCount가 0이고 failCount가 0이 아닌 경우
+            else if (successCount === 0 && failCount > 0) {
+              showErrorModal(
+                '❌ 업로드 실패',
+                '업로드에 실패했습니다.\n파일을 확인한 후 다시 시도해주세요.'
+              );
+              resetUploadState();
+            }
+            // 정상적인 성공 또는 일부 성공
+            else {
+              // 실패한 파일 제외하고 성공한 파일만 제거
+              if (failedFiles.length > 0) {
+                selectedFiles = selectedFiles.filter(file =>
+                  failedFiles.includes(file.name)
+                );
+                updatePreviewArea();
+              } else {
+                selectedFiles = [];
+              }
 
-            showSuccess(successCount, failCount);
+              showSuccess(successCount, failCount);
+            }
           }
           // 에러 응답 (result === false)
           else {
