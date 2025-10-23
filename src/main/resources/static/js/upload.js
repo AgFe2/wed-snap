@@ -33,6 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
   fileInput.addEventListener('change', handleFileSelect);
   userNameInput.addEventListener('blur', () => validateUserName());
   userNameInput.addEventListener('input', () => {
+    // 20글자 초과 시 자동으로 잘라내기
+    if (userNameInput.value.length > 20) {
+      userNameInput.value = userNameInput.value.substring(0, 20);
+    }
+
     // 입력 중 에러가 있었다면 실시간 재검증
     if (userNameError.style.display !== 'none') {
       validateUserName();
