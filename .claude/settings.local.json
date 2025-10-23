@@ -24,7 +24,11 @@
       "WebFetch(domain:mermaid.js.org)",
       "mcp__sequential-thinking__sequentialthinking",
       "Bash(dir:*)",
-      "Bash(./gradlew build:*)"
+      "Bash(./gradlew build:*)",
+      "Bash(./gradlew test:*)",
+      "Bash(chmod:*)",
+      "Bash(cat:*)",
+      "Bash(./gradlew jacocoTestReport:*)"
     ],
     "deny": [],
     "ask": []
