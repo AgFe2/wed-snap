@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.validation.ConstraintViolationException;
@@ -17,6 +18,21 @@ import me.agfe.wedsnap.dto.ErrorResponse;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(WedSnapException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public CommonApiResponse<Void> handleWedSnapException(WedSnapException ex) {
+        log.warn("WedSnapException: {} - {}", ex.getErrorCode().getCode(), ex.getMessage());
+        ErrorCode errorCode = ex.getErrorCode();
+        return CommonApiResponse.error(
+                ErrorResponse.builder()
+                             .errorCode(errorCode.getCode())
+                             .title(errorCode.getTitle())
+                             .message(errorCode.getMessage())
+                             .detail(ex.getDetail() != null ? ex.getDetail() : ex.getMessage())
+                             .build()
+        );
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -104,6 +120,21 @@ public class GlobalExceptionHandler {
                              .title(errorCode.getTitle())
                              .message(errorCode.getMessage())
                              .detail(ex.getMessage())
+                             .build()
+        );
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public CommonApiResponse<Void> handleMissingRequestPartException(MissingServletRequestPartException ex) {
+        log.warn("MissingServletRequestPartException: {}", ex.getMessage());
+        ErrorCode errorCode = ErrorCode.MISSING_REQUEST_PARAMETER;
+        return CommonApiResponse.error(
+                ErrorResponse.builder()
+                             .errorCode(errorCode.getCode())
+                             .title(errorCode.getTitle())
+                             .message(errorCode.getMessage())
+                             .detail("필수 파일 파라미터가 존재하지 않습니다: " + ex.getRequestPartName())
                              .build()
         );
     }

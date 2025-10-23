@@ -3,7 +3,7 @@ let selectedFiles = [];
 let toastQueue = [];
 let isShowingToast = false;
 const MAX_FILES = 20; // 최대 20장으로 제한
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/heic', 'image/heif'];
 
 // DOM 요소
@@ -248,16 +248,16 @@ function handleFileSelect(event) {
   const files = Array.from(event.target.files);
 
   // 파일이 선택되지 않은 경우
-  if (files.length === 0) {
-    return;
-  }
+  // if (files.length === 0) {
+  //   return;
+  // }
 
   // 파일 수 제한 확인
-  const totalFiles = selectedFiles.length + files.length;
-  if (totalFiles > MAX_FILES) {
-    showToast(`최대 ${MAX_FILES}장 제한 (추가 가능: ${MAX_FILES - selectedFiles.length}장)`);
-    return;
-  }
+  // const totalFiles = selectedFiles.length + files.length;
+  // if (totalFiles > MAX_FILES) {
+  //   showToast(`최대 ${MAX_FILES}장 제한 (추가 가능: ${MAX_FILES - selectedFiles.length}장)`);
+  //   return;
+  // }
 
   // 파일 타입 및 크기 검증
   const validFiles = [];
@@ -266,25 +266,25 @@ function handleFileSelect(event) {
   const heicFiles = [];
 
   files.forEach(file => {
-    // 타입 검증
-    if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
-      invalidTypeFiles.push(file.name);
-      return;
-    }
-
-    // 크기 검증
-    if (!validateFileSize(file)) {
-      oversizedFiles.push({
-        name: file.name,
-        size: formatFileSize(file.size)
-      });
-      return;
-    }
-
-    // HEIC 파일 감지
-    if (isHEICFile(file)) {
-      heicFiles.push(file.name);
-    }
+    // // 타입 검증
+    // if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
+    //   invalidTypeFiles.push(file.name);
+    //   return;
+    // }
+    //
+    // // 크기 검증
+    // if (!validateFileSize(file)) {
+    //   oversizedFiles.push({
+    //     name: file.name,
+    //     size: formatFileSize(file.size)
+    //   });
+    //   return;
+    // }
+    //
+    // // HEIC 파일 감지
+    // if (isHEICFile(file)) {
+    //   heicFiles.push(file.name);
+    // }
 
     validFiles.push(file);
   });
@@ -384,10 +384,11 @@ function removeThumbnail(index) {
  * 업로드 버튼 상태 업데이트
  */
 function updateUploadButtonState() {
-  const hasFiles = selectedFiles.length > 0;
-  const isValidUserName = validateUserName();
-
-  uploadBtn.disabled = !(isValidUserName && hasFiles);
+  // const hasFiles = selectedFiles.length > 0;
+  // const isValidUserName = validateUserName();
+  //
+  // uploadBtn.disabled = !(isValidUserName && hasFiles);
+  uploadBtn.disabled = false;
 }
 
 /**
@@ -396,15 +397,15 @@ function updateUploadButtonState() {
 async function handleUpload() {
   const userName = userNameInput.value.trim();
 
-  if (!userName) {
-    showToast('이름을 입력해주세요.');
-    return;
-  }
-
-  if (selectedFiles.length === 0) {
-    showToast('업로드할 사진을 선택해주세요.');
-    return;
-  }
+  // if (!userName) {
+  //   showToast('이름을 입력해주세요.');
+  //   return;
+  // }
+  //
+  // if (selectedFiles.length === 0) {
+  //   showToast('업로드할 사진을 선택해주세요.');
+  //   return;
+  // }
 
   // 업로드 버튼 비활성화
   uploadBtn.disabled = true;
@@ -538,6 +539,7 @@ function showSuccess(successCount, failCount) {
 function closeModal() {
   successModal.style.display = 'none';
   resetUploadState();
+  updatePreviewArea();
 }
 
 /**
@@ -562,6 +564,7 @@ function showErrorModal(title, message) {
 function closeErrorModal() {
   errorModal.style.display = 'none';
   // 에러 모달은 닫을 때 파일을 유지 (재시도 가능)
+  updatePreviewArea();
 }
 
 /**

@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import me.agfe.wedsnap.dto.CommonApiResponse;
 import me.agfe.wedsnap.dto.UploadRequest;
 import me.agfe.wedsnap.dto.UploadResponse;
+import me.agfe.wedsnap.exception.ErrorCode;
+import me.agfe.wedsnap.exception.WedSnapException;
 import me.agfe.wedsnap.service.UploadService;
 import me.agfe.wedsnap.validation.NoProfanity;
 
@@ -78,10 +80,16 @@ public class UploadController {
                     max = 20,
                     message = "사진은 최소 1장부터 최대 20장까지만 업로드 가능합니다."
             )
-            @RequestParam List<MultipartFile> files
+            @RequestParam(required = false) List<MultipartFile> files
     ) {
-        if (files == null || files.isEmpty() || files.stream().allMatch(MultipartFile::isEmpty)) {
-            throw new ConstraintViolationException("최소 1개의 사진을 업로드해야 합니다.", null);
+        // files 파라미터 검증
+        if (files == null || files.isEmpty()) {
+            throw new WedSnapException(ErrorCode.NO_FILES_PROVIDED);
+        }
+
+        // 빈 파일 검증
+        if (files.stream().allMatch(MultipartFile::isEmpty)) {
+            throw new WedSnapException(ErrorCode.ALL_FILES_EMPTY);
         }
 
         log.info("Upload request received: eventId={}, uploader={}, files={}",

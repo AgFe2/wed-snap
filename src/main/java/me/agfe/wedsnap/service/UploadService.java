@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.agfe.wedsnap.dto.UploadRequest;
 import me.agfe.wedsnap.dto.UploadResponse;
+import me.agfe.wedsnap.exception.ErrorCode;
+import me.agfe.wedsnap.exception.WedSnapException;
 import me.agfe.wedsnap.repository.UploadRepository;
 
 @Slf4j
@@ -40,9 +42,13 @@ public class UploadService {
                     validateFile(file);
                     uploadRepository.saveFile(request.getEventName(), request.getUploaderName(), file);
                     successCount++;
-                } catch (IllegalArgumentException | IOException e) {
+                } catch (WedSnapException e) {
                     log.error("[{}] Failed to save file: {} → {}", environment, file.getOriginalFilename(), e.getMessage());
                     failedFiles.add(file.getOriginalFilename());
+                } catch (IOException e) {
+                    log.error("[{}] Failed to save file: {} → {}", environment, file.getOriginalFilename(), e.getMessage());
+                    failedFiles.add(file.getOriginalFilename());
+                    throw new WedSnapException(ErrorCode.FILE_UPLOAD_FAILED, "파일명: " + file.getOriginalFilename(), e);
                 }
             }
         }
@@ -67,17 +73,17 @@ public class UploadService {
 
     private void validateFile(MultipartFile file) {
         if (file.isEmpty()) {
-            throw new IllegalArgumentException("빈 파일은 업로드 할 수 없습니다.");
+            throw new WedSnapException(ErrorCode.EMPTY_FILE);
         }
 
         String fileName = file.getOriginalFilename();
         if (fileName == null || fileName.isBlank()) {
-            throw new IllegalArgumentException("파일 이름이 비어있습니다.");
+            throw new WedSnapException(ErrorCode.INVALID_FILE_NAME);
         }
 
         String ext = getFileExtension(fileName);
         if (!ALLOWED_EXTENSIONS.contains(ext.toLowerCase())) {
-            throw new IllegalArgumentException("허용되지 않은 파일 형식입니다: " + fileName);
+            throw new WedSnapException(ErrorCode.INVALID_FILE_EXTENSION, "파일명: " + fileName);
         }
     }
 
