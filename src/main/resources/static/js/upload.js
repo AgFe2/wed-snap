@@ -3,7 +3,7 @@ let selectedFiles = [];
 let toastQueue = [];
 let isShowingToast = false;
 const MAX_FILES = 20; // 최대 20장으로 제한
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/heic', 'image/heif'];
 
 // DOM 요소
@@ -538,6 +538,7 @@ function showSuccess(successCount, failCount) {
 function closeModal() {
   successModal.style.display = 'none';
   resetUploadState();
+  updatePreviewArea();
 }
 
 /**
@@ -562,6 +563,7 @@ function showErrorModal(title, message) {
 function closeErrorModal() {
   errorModal.style.display = 'none';
   // 에러 모달은 닫을 때 파일을 유지 (재시도 가능)
+  updatePreviewArea();
 }
 
 /**

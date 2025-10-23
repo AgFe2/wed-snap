@@ -5,9 +5,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -23,6 +26,8 @@ import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequ
 
 import me.agfe.wedsnap.dto.UploadRequest;
 import me.agfe.wedsnap.dto.UploadResponse;
+import me.agfe.wedsnap.exception.ErrorCode;
+import me.agfe.wedsnap.exception.WedSnapException;
 import me.agfe.wedsnap.service.UploadService;
 
 @WebMvcTest(UploadController.class)
@@ -574,6 +579,213 @@ class UploadControllerTest {
 
         mockMvc.perform(builder)
                .andExpect(status().isOk());
+
+        verify(uploadService, times(1)).processUpload(any(UploadRequest.class));
+    }
+
+    // ===== 추가 테스트: 커버리지 향상 =====
+
+    @Test
+    @DisplayName("메인 업로드 페이지 - Model에 baseUrl이 추가되고 upload 뷰 반환")
+    void uploadPage_Success() throws Exception {
+        // when & then
+        mockMvc.perform(get("/"))
+               .andExpect(status().isOk())
+               .andExpect(view().name("upload"))
+               .andExpect(model().attributeExists("baseUrl"));
+    }
+
+    @Test
+    @DisplayName("파일 업로드 실패 - files 파라미터가 완전히 누락된 경우")
+    void upload_FilesParameterMissing_Failure() throws Exception {
+        // given
+        String eventName = "wedding2024";
+        String uploaderName = "홍길동";
+
+        // when & then - files 파라미터 없이 요청
+        MockMultipartHttpServletRequestBuilder builder = multipart("/api/events/{eventName}/upload", eventName);
+        builder.param("uploaderName", uploaderName);
+
+        mockMvc.perform(builder)
+               .andExpect(status().isBadRequest());
+
+        verify(uploadService, never()).processUpload(any(UploadRequest.class));
+    }
+
+    @Test
+    @DisplayName("파일 업로드 실패 - uploaderName 1자 (최소값 미만)")
+    void upload_UploaderNameOneChar_Failure() throws Exception {
+        // given
+        String eventName = "wedding2024";
+        String uploaderName = "홍";  // 1자
+
+        MockMultipartFile file = new MockMultipartFile(
+                "files", "test.jpg", "image/jpeg", "content".getBytes()
+        );
+
+        // when & then
+        MockMultipartHttpServletRequestBuilder builder = multipart("/api/events/{eventName}/upload", eventName);
+        builder.file(file);
+        builder.param("uploaderName", uploaderName);
+
+        mockMvc.perform(builder)
+               .andExpect(status().isBadRequest());
+
+        verify(uploadService, never()).processUpload(any(UploadRequest.class));
+    }
+
+    @Test
+    @DisplayName("파일 업로드 실패 - uploaderName 21자 (최대값 초과)")
+    void upload_UploaderNameTwentyOneChars_Failure() throws Exception {
+        // given
+        String eventName = "wedding2024";
+        String uploaderName = "가나다라마바사아자차카타파하가나다라마바사";  // 21자
+
+        MockMultipartFile file = new MockMultipartFile(
+                "files", "test.jpg", "image/jpeg", "content".getBytes()
+        );
+
+        // when & then
+        MockMultipartHttpServletRequestBuilder builder = multipart("/api/events/{eventName}/upload", eventName);
+        builder.file(file);
+        builder.param("uploaderName", uploaderName);
+
+        mockMvc.perform(builder)
+               .andExpect(status().isBadRequest());
+
+        verify(uploadService, never()).processUpload(any(UploadRequest.class));
+    }
+
+    @Test
+    @DisplayName("파일 업로드 성공 - 혼합 파일 (일부 empty, 일부 유효)")
+    void upload_MixedFiles_Success() throws Exception {
+        // given
+        String eventName = "wedding2024";
+        String uploaderName = "이영희";
+
+        MockMultipartFile emptyFile = new MockMultipartFile(
+                "files", "empty.jpg", "image/jpeg", new byte[0]
+        );
+        MockMultipartFile validFile = new MockMultipartFile(
+                "files", "valid.jpg", "image/jpeg", "valid content".getBytes()
+        );
+
+        UploadResponse mockResponse = UploadResponse.builder()
+                                                    .eventName(eventName)
+                                                    .uploaderName(uploaderName)
+                                                    .totalFiles(2)
+                                                    .successCount(1)
+                                                    .failCount(1)
+                                                    .failedFiles(Collections.singletonList("empty.jpg"))
+                                                    .timestamp(LocalDateTime.now())
+                                                    .message("1개 업로드 성공, 1개 실패")
+                                                    .build();
+
+        when(uploadService.processUpload(any(UploadRequest.class))).thenReturn(mockResponse);
+
+        // when & then
+        MockMultipartHttpServletRequestBuilder builder = multipart("/api/events/{eventName}/upload", eventName);
+        builder.file(emptyFile);
+        builder.file(validFile);
+        builder.param("uploaderName", uploaderName);
+
+        mockMvc.perform(builder)
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.result").value(true))
+               .andExpect(jsonPath("$.data.successCount").value(1))
+               .andExpect(jsonPath("$.data.failCount").value(1));
+
+        verify(uploadService, times(1)).processUpload(any(UploadRequest.class));
+    }
+
+    @Test
+    @DisplayName("파일 업로드 실패 - Service에서 FILE_UPLOAD_FAILED 예외 발생")
+    void upload_ServiceException_FileUploadFailed() throws Exception {
+        // given
+        String eventName = "wedding2024";
+        String uploaderName = "김철수";
+
+        MockMultipartFile file = new MockMultipartFile(
+                "files", "test.jpg", "image/jpeg", "content".getBytes()
+        );
+
+        when(uploadService.processUpload(any(UploadRequest.class)))
+                .thenThrow(new WedSnapException(ErrorCode.FILE_UPLOAD_FAILED));
+
+        // when & then
+        MockMultipartHttpServletRequestBuilder builder = multipart("/api/events/{eventName}/upload", eventName);
+        builder.file(file);
+        builder.param("uploaderName", uploaderName);
+
+        mockMvc.perform(builder)
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.result").value(false))
+               .andExpect(jsonPath("$.error.errorCode").value("FILE_UPLOAD_FAILED"))
+               .andExpect(jsonPath("$.error.title").value("파일 업로드 실패"))
+               .andExpect(jsonPath("$.error.message").value("파일 업로드 처리 중 오류가 발생했습니다."));
+
+        verify(uploadService, times(1)).processUpload(any(UploadRequest.class));
+    }
+
+    @Test
+    @DisplayName("파일 업로드 실패 - Service에서 INVALID_FILE_EXTENSION 예외 발생")
+    void upload_ServiceException_InvalidFileExtension() throws Exception {
+        // given
+        String eventName = "wedding2024";
+        String uploaderName = "박민수";
+
+        MockMultipartFile file = new MockMultipartFile(
+                "files", "test.exe", "application/exe", "content".getBytes()
+        );
+
+        when(uploadService.processUpload(any(UploadRequest.class)))
+                .thenThrow(new WedSnapException(ErrorCode.INVALID_FILE_EXTENSION));
+
+        // when & then
+        MockMultipartHttpServletRequestBuilder builder = multipart("/api/events/{eventName}/upload", eventName);
+        builder.file(file);
+        builder.param("uploaderName", uploaderName);
+
+        mockMvc.perform(builder)
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.result").value(false))
+               .andExpect(jsonPath("$.error.errorCode").value("INVALID_FILE_EXTENSION"))
+               .andExpect(jsonPath("$.error.title").value("허용되지 않은 파일 형식"))
+               .andExpect(jsonPath("$.error.message").value("허용되지 않은 파일 형식입니다."));
+
+        verify(uploadService, times(1)).processUpload(any(UploadRequest.class));
+    }
+
+    @Test
+    @DisplayName("파일 업로드 실패 - 에러 응답 상세 구조 검증")
+    void upload_ErrorResponse_DetailedValidation() throws Exception {
+        // given
+        String eventName = "wedding2024";
+        String uploaderName = "최지영";
+        String detailMessage = "상세한 에러 정보";
+
+        MockMultipartFile file = new MockMultipartFile(
+                "files", "test.jpg", "image/jpeg", "content".getBytes()
+        );
+
+        WedSnapException exception = new WedSnapException(ErrorCode.FILE_UPLOAD_FAILED, detailMessage);
+        when(uploadService.processUpload(any(UploadRequest.class)))
+                .thenThrow(exception);
+
+        // when & then
+        MockMultipartHttpServletRequestBuilder builder = multipart("/api/events/{eventName}/upload", eventName);
+        builder.file(file);
+        builder.param("uploaderName", uploaderName);
+
+        mockMvc.perform(builder)
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.result").value(false))
+               .andExpect(jsonPath("$.data").doesNotExist())
+               .andExpect(jsonPath("$.error").exists())
+               .andExpect(jsonPath("$.error.errorCode").value("FILE_UPLOAD_FAILED"))
+               .andExpect(jsonPath("$.error.title").value("파일 업로드 실패"))
+               .andExpect(jsonPath("$.error.message").value("파일 업로드 처리 중 오류가 발생했습니다."))
+               .andExpect(jsonPath("$.error.detail").value(detailMessage));
 
         verify(uploadService, times(1)).processUpload(any(UploadRequest.class));
     }

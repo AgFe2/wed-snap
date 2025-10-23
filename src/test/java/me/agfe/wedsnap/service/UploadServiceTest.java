@@ -1,6 +1,7 @@
 package me.agfe.wedsnap.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -26,6 +27,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import me.agfe.wedsnap.dto.UploadRequest;
 import me.agfe.wedsnap.dto.UploadResponse;
+import me.agfe.wedsnap.exception.ErrorCode;
+import me.agfe.wedsnap.exception.WedSnapException;
 import me.agfe.wedsnap.repository.UploadRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -270,8 +273,8 @@ class UploadServiceTest {
     }
 
     @Test
-    @DisplayName("파일 업로드 실패 - IOException 발생")
-    void processUpload_IOException_Failure() throws IOException {
+    @DisplayName("파일 업로드 실패 - IOException 발생 시 예외 throw")
+    void processUpload_IOException_ThrowsException() throws IOException {
         // given
         String eventName = "wedding2024";
         String uploaderName = "강민호";
@@ -292,13 +295,15 @@ class UploadServiceTest {
         when(uploadRepository.saveFile(eq(eventName), eq(uniqueUploaderName), any(MultipartFile.class)))
                 .thenThrow(new IOException("Disk full"));
 
-        // when
-        UploadResponse response = uploadService.processUpload(request);
+        // when & then
+        WedSnapException exception = assertThrows(WedSnapException.class, () -> uploadService.processUpload(request));
 
-        // then
-        assertThat(response.getSuccessCount()).isEqualTo(0);
-        assertThat(response.getFailCount()).isEqualTo(1);
-        assertThat(response.getFailedFiles()).contains("error.jpg");
+        // 예외 상세 검증
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.FILE_UPLOAD_FAILED);
+        assertThat(exception.getDetail()).contains("error.jpg");
+        assertThat(exception.getCause()).isInstanceOf(IOException.class);
+
+        verify(uploadRepository, times(1)).saveFile(eq(eventName), eq(uniqueUploaderName), any(MultipartFile.class));
     }
 
     @Test
@@ -431,5 +436,150 @@ class UploadServiceTest {
         assertThat(response.getFailedFiles()).contains("noextension");
 
         verify(uploadRepository, never()).saveFile(anyString(), anyString(), any(MultipartFile.class));
+    }
+
+    @Test
+    @DisplayName("파일 업로드 실패 - 파일명이 공백만 있는 경우")
+    void processUpload_BlankFileName_Failure() throws IOException {
+        // given
+        String eventName = "wedding2024";
+        String uploaderName = "윤서준";
+        String uniqueUploaderName = "윤서준";
+
+        MockMultipartFile blankNameFile = new MockMultipartFile(
+                "file", "   ", "image/jpeg", "content".getBytes()
+        );
+
+        UploadRequest request = UploadRequest.builder()
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(List.of(blankNameFile))
+                                             .build();
+
+        when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
+                .thenReturn(uniqueUploaderName);
+
+        // when
+        UploadResponse response = uploadService.processUpload(request);
+
+        // then
+        assertThat(response.getSuccessCount()).isEqualTo(0);
+        assertThat(response.getFailCount()).isEqualTo(1);
+        assertThat(response.getFailedFiles()).hasSize(1);
+
+        verify(uploadRepository, never()).saveFile(anyString(), anyString(), any(MultipartFile.class));
+    }
+
+    @Test
+    @DisplayName("파일 업로드 실패 - 점으로 시작하는 파일명")
+    void processUpload_FileNameStartsWithDot_Failure() throws IOException {
+        // given
+        String eventName = "wedding2024";
+        String uploaderName = "한지우";
+        String uniqueUploaderName = "한지우";
+
+        MockMultipartFile dotFile = new MockMultipartFile(
+                "file", ".hidden", "image/jpeg", "content".getBytes()
+        );
+
+        UploadRequest request = UploadRequest.builder()
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(List.of(dotFile))
+                                             .build();
+
+        when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
+                .thenReturn(uniqueUploaderName);
+
+        // when
+        UploadResponse response = uploadService.processUpload(request);
+
+        // then
+        assertThat(response.getSuccessCount()).isEqualTo(0);
+        assertThat(response.getFailCount()).isEqualTo(1);
+        assertThat(response.getFailedFiles()).contains(".hidden");
+
+        verify(uploadRepository, never()).saveFile(anyString(), anyString(), any(MultipartFile.class));
+    }
+
+    @Test
+    @DisplayName("파일 업로드 성공 - 여러 개의 점이 있는 파일명")
+    void processUpload_MultipleDotsInFileName_Success() throws IOException {
+        // given
+        String eventName = "wedding2024";
+        String uploaderName = "최민재";
+        String uniqueUploaderName = "최민재";
+
+        MockMultipartFile multiDotFile = new MockMultipartFile(
+                "file", "my.photo.image.jpg", "image/jpeg", "content".getBytes()
+        );
+
+        UploadRequest request = UploadRequest.builder()
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(List.of(multiDotFile))
+                                             .build();
+
+        when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
+                .thenReturn(uniqueUploaderName);
+        when(uploadRepository.saveFile(eq(eventName), eq(uniqueUploaderName), any(MultipartFile.class)))
+                .thenReturn("saved-uuid.jpg");
+
+        // when
+        UploadResponse response = uploadService.processUpload(request);
+
+        // then
+        assertThat(response.getSuccessCount()).isEqualTo(1);
+        assertThat(response.getFailCount()).isEqualTo(0);
+        assertThat(response.getFailedFiles()).isEmpty();
+
+        verify(uploadRepository, times(1)).saveFile(eq(eventName), eq(uniqueUploaderName), any(MultipartFile.class));
+    }
+
+    @Test
+    @DisplayName("파일 업로드 중 IOException 발생 - 부분 성공 후 예외")
+    void processUpload_IOException_AfterPartialSuccess_ThrowsException() throws IOException {
+        // given
+        String eventName = "wedding2024";
+        String uploaderName = "송하은";
+        String uniqueUploaderName = "송하은";
+
+        MockMultipartFile validFile1 = new MockMultipartFile(
+                "file1", "photo1.jpg", "image/jpeg", "content1".getBytes()
+        );
+        MockMultipartFile validFile2 = new MockMultipartFile(
+                "file2", "photo2.jpg", "image/jpeg", "content2".getBytes()
+        );
+        MockMultipartFile errorFile = new MockMultipartFile(
+                "file3", "photo3.jpg", "image/jpeg", "content3".getBytes()
+        );
+
+        UploadRequest request = UploadRequest.builder()
+                                             .eventName(eventName)
+                                             .uploaderName(uploaderName)
+                                             .files(Arrays.asList(validFile1, validFile2, errorFile))
+                                             .build();
+
+        when(uploadRepository.findUniqueUploaderName(eventName, uploaderName))
+                .thenReturn(uniqueUploaderName);
+        when(uploadRepository.saveFile(eq(eventName), eq(uniqueUploaderName), eq(validFile1)))
+                .thenReturn("saved-uuid-1.jpg");
+        when(uploadRepository.saveFile(eq(eventName), eq(uniqueUploaderName), eq(validFile2)))
+                .thenReturn("saved-uuid-2.jpg");
+        when(uploadRepository.saveFile(eq(eventName), eq(uniqueUploaderName), eq(errorFile)))
+                .thenThrow(new IOException("Network error"));
+
+        // when & then
+        WedSnapException exception = assertThrows(WedSnapException.class, () -> uploadService.processUpload(request));
+
+        // 예외 상세 검증
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.FILE_UPLOAD_FAILED);
+        assertThat(exception.getDetail()).contains("photo3.jpg");
+        assertThat(exception.getCause()).isInstanceOf(IOException.class);
+
+        // 첫 번째와 두 번째 파일은 성공적으로 저장되었고, 세 번째 파일에서 예외 발생
+        verify(uploadRepository, times(1)).saveFile(eq(eventName), eq(uniqueUploaderName), eq(validFile1));
+        verify(uploadRepository, times(1)).saveFile(eq(eventName), eq(uniqueUploaderName), eq(validFile2));
+        verify(uploadRepository, times(1)).saveFile(eq(eventName), eq(uniqueUploaderName), eq(errorFile));
     }
 }
