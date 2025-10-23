@@ -432,7 +432,7 @@ async function handleUpload() {
           // 성공 응답 (result === true)
           if (response.result === true) {
             const data = response.data || {};
-            const successCount = data.successCount || selectedFiles.length;
+            const successCount = data.successCount || 0;
             const failCount = data.failCount || 0;
             const failedFiles = data.failedFiles || [];
 
