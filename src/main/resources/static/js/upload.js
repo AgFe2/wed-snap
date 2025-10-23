@@ -3,7 +3,7 @@ let selectedFiles = [];
 let toastQueue = [];
 let isShowingToast = false;
 const MAX_FILES = 20; // 최대 20장으로 제한
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/heic', 'image/heif'];
 
 // DOM 요소
@@ -33,6 +33,20 @@ document.addEventListener('DOMContentLoaded', () => {
   fileInput.addEventListener('change', handleFileSelect);
   userNameInput.addEventListener('blur', () => validateUserName());
   userNameInput.addEventListener('input', () => {
+    let value = userNameInput.value;
+
+    // 실시간 공백 제거 (입력되었다가 지워짐)
+    const newValue = value.replace(/\s/g, '');
+    if (value !== newValue) {
+      userNameInput.value = newValue;
+      value = newValue;
+    }
+
+    // 20글자 초과 시 자동으로 잘라내기 (입력되었다가 지워짐)
+    if (value.length > 20) {
+      userNameInput.value = value.substring(0, 20);
+    }
+
     // 입력 중 에러가 있었다면 실시간 재검증
     if (userNameError.style.display !== 'none') {
       validateUserName();
@@ -42,6 +56,20 @@ document.addEventListener('DOMContentLoaded', () => {
   uploadBtn.addEventListener('click', handleUpload);
   closeModalBtn.addEventListener('click', closeModal);
   closeErrorModalBtn.addEventListener('click', closeErrorModal);
+
+  // 성공 모달 외부 클릭 시 닫기
+  successModal.addEventListener('click', (e) => {
+    if (e.target === successModal) {
+      closeModal();
+    }
+  });
+
+  // 에러 모달 외부 클릭 시 닫기
+  errorModal.addEventListener('click', (e) => {
+    if (e.target === errorModal) {
+      closeErrorModal();
+    }
+  });
 });
 
 // ========================================
@@ -171,6 +199,90 @@ function isHEICFile(file) {
          file.type === 'image/heif' ||
          file.name.toLowerCase().endsWith('.heic') ||
          file.name.toLowerCase().endsWith('.heif');
+}
+
+/**
+ * 에러 코드를 사용자 친화적인 메시지로 변환
+ */
+function getErrorMessage(errorCode) {
+  const errorMessages = {
+    'FILE_SIZE_EXCEEDED': {
+      emoji: '📦',
+      title: '파일이 너무 커요',
+      message: '사진 용량이 제한을 초과했습니다.\n더 작은 사진으로 다시 시도해주세요.'
+    },
+    'CONSTRAINT_VIOLATION': {
+      emoji: '⚠️',
+      title: '입력값을 확인해주세요',
+      message: '이름 또는 사진 선택에 문제가 있습니다.\n다시 확인해주세요.'
+    },
+    'INVALID_VALUE': {
+      emoji: '❌',
+      title: '잘못된 요청이에요',
+      message: '입력하신 정보에 문제가 있습니다.\n페이지를 새로고침하고 다시 시도해주세요.'
+    },
+    'MISSING_REQUEST_PARAMETER': {
+      emoji: '📝',
+      title: '필요한 정보가 없어요',
+      message: '이름과 사진을 모두 입력해주세요.'
+    },
+    'NOT_MULTIPART_REQUEST': {
+      emoji: '🔄',
+      title: '업로드 형식 오류',
+      message: '페이지를 새로고침하고 다시 시도해주세요.'
+    },
+    'INTERNAL_ERROR': {
+      emoji: '🔧',
+      title: '서버에 문제가 생겼어요',
+      message: '일시적인 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.'
+    },
+    'RESPONSE_STATUS_ERROR': {
+      emoji: '⚠️',
+      title: '요청 처리 실패',
+      message: '요청을 처리할 수 없습니다.\n잠시 후 다시 시도해주세요.'
+    },
+    'EMPTY_FILE': {
+      emoji: '📄',
+      title: '빈 파일이에요',
+      message: '빈 파일은 업로드할 수 없습니다.\n유효한 사진을 선택해주세요.'
+    },
+    'INVALID_FILE_NAME': {
+      emoji: '📝',
+      title: '파일명이 잘못되었어요',
+      message: '파일 이름이 비어있거나 유효하지 않습니다.\n다른 파일을 선택해주세요.'
+    },
+    'INVALID_FILE_EXTENSION': {
+      emoji: '🖼️',
+      title: '허용되지 않은 파일 형식',
+      message: '허용되지 않은 파일 형식입니다.\nJPG, PNG, GIF, HEIC 형식의 사진만 업로드 가능합니다.'
+    },
+    'NO_FILES_PROVIDED': {
+      emoji: '📋',
+      title: '파일이 없어요',
+      message: '최소 1개의 파일을 업로드해야 합니다.\n사진을 선택해주세요.'
+    },
+    'ALL_FILES_EMPTY': {
+      emoji: '🗂️',
+      title: '모든 파일이 비어있어요',
+      message: '업로드된 모든 파일이 비어있습니다.\n유효한 파일을 선택해주세요.'
+    },
+    'INVALID_UPLOADER_NAME': {
+      emoji: '👤',
+      title: '이름이 잘못되었어요',
+      message: '업로더 이름이 유효하지 않습니다.\n2~20자의 한글, 영문, 숫자만 입력해주세요.'
+    },
+    'FILE_UPLOAD_FAILED': {
+      emoji: '❌',
+      title: '업로드 실패',
+      message: '파일 업로드 처리 중 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.'
+    }
+  };
+
+  return errorMessages[errorCode] || {
+    emoji: '❓',
+    title: '알 수 없는 오류',
+    message: '문제가 발생했습니다.\n계속 문제가 발생하면 관리자에게 문의해주세요.'
+  };
 }
 
 /**
@@ -369,52 +481,81 @@ async function handleUpload() {
           // 성공 응답 (result === true)
           if (response.result === true) {
             const data = response.data || {};
-            const successCount = data.successCount || selectedFiles.length;
+            const successCount = data.successCount || 0;
             const failCount = data.failCount || 0;
             const failedFiles = data.failedFiles || [];
 
-            // 실패한 파일 제외하고 성공한 파일만 제거
-            if (failedFiles.length > 0) {
-              selectedFiles = selectedFiles.filter(file =>
-                failedFiles.includes(file.name)
+            // successCount와 failCount가 모두 0인 경우
+            if (successCount === 0 && failCount === 0) {
+              showErrorModal(
+                '📋 파일이 없어요',
+                '선택한 파일이 없습니다.\n사진을 선택한 후 다시 시도해주세요.'
               );
-              updatePreviewArea();
-            } else {
-              selectedFiles = [];
+              resetUploadState();
             }
+            // successCount가 0이고 failCount가 0이 아닌 경우
+            else if (successCount === 0 && failCount > 0) {
+              showErrorModal(
+                '❌ 업로드 실패',
+                '업로드에 실패했습니다.\n파일을 확인한 후 다시 시도해주세요.'
+              );
+              resetUploadState();
+            }
+            // 정상적인 성공 또는 일부 성공
+            else {
+              // 실패한 파일 제외하고 성공한 파일만 제거
+              if (failedFiles.length > 0) {
+                selectedFiles = selectedFiles.filter(file =>
+                  failedFiles.includes(file.name)
+                );
+                updatePreviewArea();
+              } else {
+                selectedFiles = [];
+              }
 
-            showSuccess(successCount, failCount);
+              showSuccess(successCount, failCount);
+            }
           }
           // 에러 응답 (result === false)
           else {
             const error = response.error || {};
-            const errorMsg = error.detail || '업로드에 실패했습니다.';
-            showErrorModal(errorMsg);
+            const errorCode = error.errorCode;
+            const errorInfo = getErrorMessage(errorCode);
+
+            showErrorModal(
+              `${errorInfo.emoji} ${errorInfo.title}`,
+              errorInfo.message
+            );
             resetUploadState();
           }
         } catch (e) {
           // JSON 파싱 실패
-          showErrorModal('응답 처리 중 오류가 발생했습니다.');
+          showErrorModal('🔧 서버 오류', '응답 처리 중 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.');
           resetUploadState();
         }
       } else {
         // HTTP 에러 (4xx, 5xx)
-        let errorMsg = '업로드에 실패했습니다.';
+        let errorCode = null;
         try {
           const response = JSON.parse(xhr.responseText);
           const error = response.error || {};
-          errorMsg = error.detail || errorMsg;
+          errorCode = error.errorCode;
         } catch (e) {
-          // JSON 파싱 실패 시 기본 메시지 사용
+          // JSON 파싱 실패 시 errorCode는 null로 유지
         }
-        showErrorModal(errorMsg);
+
+        const errorInfo = getErrorMessage(errorCode);
+        showErrorModal(
+          `${errorInfo.emoji} ${errorInfo.title}`,
+          errorInfo.message
+        );
         resetUploadState();
       }
     };
 
     // 네트워크 에러 핸들러
     xhr.onerror = () => {
-      showErrorModal('네트워크 오류가 발생했습니다.\n연결 상태를 확인해주세요.');
+      showErrorModal('📡 네트워크 오류', '네트워크 연결이 불안정합니다.\n인터넷 연결 상태를 확인해주세요.');
       resetUploadState();
     };
 
@@ -460,14 +601,22 @@ function showSuccess(successCount, failCount) {
 function closeModal() {
   successModal.style.display = 'none';
   resetUploadState();
+  updatePreviewArea();
 }
 
 /**
  * 에러 모달 표시
  */
-function showErrorModal(message) {
+function showErrorModal(title, message) {
   progressSection.style.display = 'none';
-  errorMessage.textContent = message;
+
+  // title 업데이트
+  const errorTitle = errorModal.querySelector('.modal-title');
+  if (errorTitle) {
+    errorTitle.textContent = title || '업로드 실패';
+  }
+
+  errorMessage.textContent = message || '업로드에 실패했습니다.';
   errorModal.style.display = 'flex';
 }
 
@@ -477,22 +626,19 @@ function showErrorModal(message) {
 function closeErrorModal() {
   errorModal.style.display = 'none';
   // 에러 모달은 닫을 때 파일을 유지 (재시도 가능)
+  updatePreviewArea();
 }
 
 /**
  * 업로드 상태 초기화
+ * 에러 발생 시 파일 목록은 유지하여 재시도 가능하도록 함
  */
 function resetUploadState() {
-  // 사진 선택 초기화
-  selectedFiles = [];
-  updatePreviewArea();
+  // 파일 목록은 각 케이스에서 개별 처리 (에러 시 유지, 성공 모달 닫을 때 정리)
 
   // 진행률 초기화
   progressFill.style.width = '0%';
   progressText.textContent = '업로드 중... 0%';
-
-  // 이름은 유지
-  // userNameInput.value = '';
 
   // 버튼 상태 업데이트
   updateUploadButtonState();

@@ -6,7 +6,7 @@ spring:
 wedsnap:
   environment: local
   upload:
-    base-path: "C:/temp/wedsnap"
+    base-path: "C:/temp/wedsnap-local"
 
 logging:
   config: classpath:logback-local.xml
