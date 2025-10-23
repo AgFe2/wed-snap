@@ -566,18 +566,14 @@ function closeErrorModal() {
 
 /**
  * 업로드 상태 초기화
+ * 에러 발생 시 파일 목록은 유지하여 재시도 가능하도록 함
  */
 function resetUploadState() {
-  // 사진 선택 초기화
-  selectedFiles = [];
-  updatePreviewArea();
+  // 파일 목록은 각 케이스에서 개별 처리 (에러 시 유지, 성공 모달 닫을 때 정리)
 
   // 진행률 초기화
   progressFill.style.width = '0%';
   progressText.textContent = '업로드 중... 0%';
-
-  // 이름은 유지
-  // userNameInput.value = '';
 
   // 버튼 상태 업데이트
   updateUploadButtonState();
