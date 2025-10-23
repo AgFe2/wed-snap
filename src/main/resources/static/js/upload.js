@@ -42,6 +42,20 @@ document.addEventListener('DOMContentLoaded', () => {
   uploadBtn.addEventListener('click', handleUpload);
   closeModalBtn.addEventListener('click', closeModal);
   closeErrorModalBtn.addEventListener('click', closeErrorModal);
+
+  // 성공 모달 외부 클릭 시 닫기
+  successModal.addEventListener('click', (e) => {
+    if (e.target === successModal) {
+      closeModal();
+    }
+  });
+
+  // 에러 모달 외부 클릭 시 닫기
+  errorModal.addEventListener('click', (e) => {
+    if (e.target === errorModal) {
+      closeErrorModal();
+    }
+  });
 });
 
 // ========================================
@@ -171,6 +185,55 @@ function isHEICFile(file) {
          file.type === 'image/heif' ||
          file.name.toLowerCase().endsWith('.heic') ||
          file.name.toLowerCase().endsWith('.heif');
+}
+
+/**
+ * 에러 코드를 사용자 친화적인 메시지로 변환
+ */
+function getErrorMessage(errorCode) {
+  const errorMessages = {
+    'FILE_SIZE_EXCEEDED': {
+      emoji: '📦',
+      title: '파일이 너무 커요',
+      message: '사진 용량이 제한을 초과했습니다.\n더 작은 사진으로 다시 시도해주세요.'
+    },
+    'CONSTRAINT_VIOLATION': {
+      emoji: '⚠️',
+      title: '입력값을 확인해주세요',
+      message: '이름 또는 사진 선택에 문제가 있습니다.\n다시 확인해주세요.'
+    },
+    'INVALID_VALUE': {
+      emoji: '❌',
+      title: '잘못된 요청이에요',
+      message: '입력하신 정보에 문제가 있습니다.\n페이지를 새로고침하고 다시 시도해주세요.'
+    },
+    'MISSING_REQUEST_PARAMETER': {
+      emoji: '📝',
+      title: '필요한 정보가 없어요',
+      message: '이름과 사진을 모두 입력해주세요.'
+    },
+    'NOT_MULTIPART_REQUEST': {
+      emoji: '🔄',
+      title: '업로드 형식 오류',
+      message: '페이지를 새로고침하고 다시 시도해주세요.'
+    },
+    'INTERNAL_ERROR': {
+      emoji: '🔧',
+      title: '서버에 문제가 생겼어요',
+      message: '일시적인 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.'
+    },
+    'RESPONSE_STATUS_ERROR': {
+      emoji: '⚠️',
+      title: '요청 처리 실패',
+      message: '요청을 처리할 수 없습니다.\n잠시 후 다시 시도해주세요.'
+    }
+  };
+
+  return errorMessages[errorCode] || {
+    emoji: '❓',
+    title: '알 수 없는 오류',
+    message: '문제가 발생했습니다.\n계속 문제가 발생하면 관리자에게 문의해주세요.'
+  };
 }
 
 /**
@@ -388,33 +451,43 @@ async function handleUpload() {
           // 에러 응답 (result === false)
           else {
             const error = response.error || {};
-            const errorMsg = error.detail || '업로드에 실패했습니다.';
-            showErrorModal(errorMsg);
+            const errorCode = error.errorCode;
+            const errorInfo = getErrorMessage(errorCode);
+
+            showErrorModal(
+              `${errorInfo.emoji} ${errorInfo.title}`,
+              errorInfo.message
+            );
             resetUploadState();
           }
         } catch (e) {
           // JSON 파싱 실패
-          showErrorModal('응답 처리 중 오류가 발생했습니다.');
+          showErrorModal('🔧 서버 오류', '응답 처리 중 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.');
           resetUploadState();
         }
       } else {
         // HTTP 에러 (4xx, 5xx)
-        let errorMsg = '업로드에 실패했습니다.';
+        let errorCode = null;
         try {
           const response = JSON.parse(xhr.responseText);
           const error = response.error || {};
-          errorMsg = error.detail || errorMsg;
+          errorCode = error.errorCode;
         } catch (e) {
-          // JSON 파싱 실패 시 기본 메시지 사용
+          // JSON 파싱 실패 시 errorCode는 null로 유지
         }
-        showErrorModal(errorMsg);
+
+        const errorInfo = getErrorMessage(errorCode);
+        showErrorModal(
+          `${errorInfo.emoji} ${errorInfo.title}`,
+          errorInfo.message
+        );
         resetUploadState();
       }
     };
 
     // 네트워크 에러 핸들러
     xhr.onerror = () => {
-      showErrorModal('네트워크 오류가 발생했습니다.\n연결 상태를 확인해주세요.');
+      showErrorModal('📡 네트워크 오류', '네트워크 연결이 불안정합니다.\n인터넷 연결 상태를 확인해주세요.');
       resetUploadState();
     };
 
@@ -465,9 +538,16 @@ function closeModal() {
 /**
  * 에러 모달 표시
  */
-function showErrorModal(message) {
+function showErrorModal(title, message) {
   progressSection.style.display = 'none';
-  errorMessage.textContent = message;
+
+  // title 업데이트
+  const errorTitle = errorModal.querySelector('.modal-title');
+  if (errorTitle) {
+    errorTitle.textContent = title || '업로드 실패';
+  }
+
+  errorMessage.textContent = message || '업로드에 실패했습니다.';
   errorModal.style.display = 'flex';
 }
 
